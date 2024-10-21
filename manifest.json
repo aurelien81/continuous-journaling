@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-canvas-addons",
+	"name": "Obsidian Canvas Addons",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Adds a set of extra tools to the obsidian canvas.",
+	"author": "Aurélien Lainé",
+	"authorUrl": "https://www.aurelienlaine.com",
+	"fundingUrl": "https://buymeacoffee.com/5SviNkXXo5",
+	"isDesktopOnly": false
+}
