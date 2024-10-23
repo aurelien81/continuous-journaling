@@ -125,9 +125,6 @@ export default class journalingPlugin extends Plugin {
 	
 	// Helper function to add each journal entry to the panel
 	addJournalToPanel(panel: HTMLElement, file: TFile, content: string) {
-		const journalContainer = document.createElement('div');
-		journalContainer.classList.add('journal-entry');
-
 		// Add a header for the journal entry
 		const journalEntryHeader = document.createElement('div');
 		journalEntryHeader.classList.add('journal-entry-header');
@@ -144,43 +141,47 @@ export default class journalingPlugin extends Plugin {
 		const journalEntryLink = document.createElement('a')
 		journalEntryLink.textContent = file.basename;
 		journalEntryLink.style.cursor = 'pointer';
+		journalEntryTitle.appendChild(journalEntryLink);
+		journalEntryHeader.appendChild(journalEntryTitle);
 
 		// Open file when clicking on title
 		journalEntryLink.addEventListener('click', () => {
 			this.app.workspace.openLinkText(file.basename, file.path);
 		});
 
-		journalEntryTitle.appendChild(journalEntryLink);
-		journalEntryHeader.appendChild(journalEntryTitle);
-
 		// Create the collapsible content area
 		const collapsibleContent = document.createElement('div');
 		collapsibleContent.classList.add('collapsible-content');
 		collapsibleContent.classList.add('content-expanded');
-
 		panel.appendChild(collapsibleContent);
 
 		// Create an editable textarea for the file content
 		const editableContent = document.createElement('textarea');
 		editableContent.classList.add('editable-content');
 		editableContent.value = content;
-
 		collapsibleContent.appendChild(editableContent);
+
+		// Use requestAnimationFrame to ensure rendering is done for each element
+		requestAnimationFrame(() => {
+			editableContent.style.height = editableContent.scrollHeight + 'px';
+		});
+
+		// Event listener to adjust the height of the textarea on input
+		editableContent.addEventListener('input', e => {
+			editableContent.style.height = 'auto';
+			editableContent.style.height = editableContent.scrollHeight + 'px';
+		});
 
 		// Add event listener to toggle the panel on button click
 		toggleButton.addEventListener('click', () => {
 			toggleButton.classList.toggle('toggle-expanded');
 			collapsibleContent.classList.toggle('content-expanded');
-			console.log('editable content scroll height:', editableContent.scrollHeight);
 		});
 
 		// Save edits to the original file when the content changes
 		editableContent.addEventListener('input', async () => {
 			await this.app.vault.modify(file, editableContent.value);
 		});
-
-		journalContainer.appendChild(editableContent);
-		collapsibleContent.appendChild(journalContainer);  // Append journal entry to the collapsible panel
 
 		const horizontalRule = document.createElement('hr');
 		horizontalRule.classList.add('journal-horizontal-hr');
