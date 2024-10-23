@@ -1,8 +1,78 @@
-/*
+/* .collapsible-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
 
-If your plugin does not need CSS, delete this file.
+.journal-entry {
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-*/
+.journal-entry-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.collapsible-toggle {
+    margin: 0 5px;
+    cursor: pointer;
+    font-size: 16px;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.collapsible-toggle:after {
+    font-family: 'fontawesome';
+    content: "\f054";
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 200;
+    line-height: 1.556em;
+    vertical-align: middle;
+}
+
+.journal-entry {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.journal-entry.expanded .collapsible-journal-entry {
+    max-height: 500px;
+}
+
+.journal-entry.expanded .collapsible-toggle:after {
+    content: "\f078";
+}
+
+.journal-entry textarea {
+    resize: none;
+    border: none;
+    outline: none;
+    background: none;
+}
+
+.journal-horizontal-hr {
+    margin: 0 10px;
+    border: none;
+    height: 1px;
+    width: 95%;
+    background-color: white;
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
