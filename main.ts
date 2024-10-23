@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting } from 'obsidian';
+import { text } from 'stream/consumers';
 
 interface journalingPluginSettings {
 	journalingPluginSetting: string;
@@ -13,7 +14,6 @@ export default class journalingPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		console.log('Journaling plugin loaded!');
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('notebook-text', 'Journals', async (evt: MouseEvent) => {
@@ -39,7 +39,6 @@ export default class journalingPlugin extends Plugin {
 			id: 'sample-editor-command',
 			name: 'Sample editor command',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
 				editor.replaceSelection('Sample Editor Command');
 			}
 		});
@@ -62,38 +61,17 @@ export default class journalingPlugin extends Plugin {
 				}
 			}
 		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		// this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-		// 	console.log('click', evt);
-		// });
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		// this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
-	// Function to display journal page
-	async openJournalPage() {
-		const journalFiles = this.getJournalFiles(); // Step to get daily notes
-
-		console.log('Concatenated Journal Content:', journalFiles);
-	}
+	// || --- journal files management ---
 
 	// Find all journal/daily note files
 	getJournalFiles(): TFile[] {
 		// Get all markdown files in the vault
 		const files = this.app.vault.getMarkdownFiles();
-		console.log("List of files:", files);
 
 		// Filter files that follow a daily note pattern
 		const journalFiles = files.filter((file) => this.isJournalFile(file));
-
-		console.log("List of journal files:", journalFiles);
-		new Notice(`All journal files added to the console.`);
 		return journalFiles;
 	}
 
@@ -103,6 +81,8 @@ export default class journalingPlugin extends Plugin {
 		const dailyNotePattern = /^\d{4}-\d{2}-\d{2}$/; // Matches YYYY-MM-DD
 		return dailyNotePattern.test(file.basename);
 	}
+
+	// || --- Panel creation inside new tab ---
 
 	async showJournalsInLeaf() {
 		const journalFiles = this.getJournalFiles();
@@ -122,18 +102,14 @@ export default class journalingPlugin extends Plugin {
 		});
 
 		// Access the container element of the markdown view
-		const contentEl = leaf.view.containerEl; // Use containerEl to access the element
+		const contentElement = leaf.view.containerEl; // Use containerEl to access the element
 	
-		contentEl.empty(); // Clear the content area if necessary
+		contentElement.empty(); // Clear the content area if necessary
 	
 		// Create a scrollable panel for journal entries
 		const panel = document.createElement('div');
 		panel.classList.add('custom-journal-panel');
-		panel.style.overflowY = 'scroll';  // Enable vertical scrolling
-		panel.style.height = '100vh';       // Adjust height as needed
-		panel.style.padding = '10px';
-		panel.style.border = '1px solid var(--background-modifier-border)';
-		panel.style.background = 'var(--background-primary)'; // Obsidian theme color
+
 	
 		// Add content for each journal file
 		for (const file of journalFiles) {
@@ -142,214 +118,76 @@ export default class journalingPlugin extends Plugin {
 		}
 	
 		// Append the custom panel to the leaf's container element
-		contentEl.appendChild(panel);
+		contentElement.appendChild(panel);
 	}
+
+	// || --- Detailed UI creation/update ---
 	
 	// Helper function to add each journal entry to the panel
 	addJournalToPanel(panel: HTMLElement, file: TFile, content: string) {
 		const journalContainer = document.createElement('div');
 		journalContainer.classList.add('journal-entry');
-		// journalContainer.classList.add('expanded');
-		journalContainer.style.marginBottom = '20px';
 
 		// Add a header for the journal entry
-		const header = document.createElement('h3');
-		header.textContent = file.basename;
-		panel.appendChild(header);
+		const journalEntryHeader = document.createElement('div');
+		journalEntryHeader.classList.add('journal-entry-header');
+		panel.appendChild(journalEntryHeader);
 
 		// Create the toggle button
 		const toggleButton = document.createElement('button');
-		toggleButton.textContent = 'Toggle Journal View';
 		toggleButton.classList.add('collapsible-toggle');
-		header.appendChild(toggleButton);
+		toggleButton.classList.add('toggle-expanded');
+		journalEntryHeader.appendChild(toggleButton);
+
+		// Add a link for the journal entry title leading to the original file
+		const journalEntryTitle = document.createElement('h3');
+		const journalEntryLink = document.createElement('a')
+		journalEntryLink.textContent = file.basename;
+		journalEntryLink.style.cursor = 'pointer';
+
+		// Open file when clicking on title
+		journalEntryLink.addEventListener('click', () => {
+			this.app.workspace.openLinkText(file.basename, file.path);
+		});
+
+		journalEntryTitle.appendChild(journalEntryLink);
+		journalEntryHeader.appendChild(journalEntryTitle);
 
 		// Create the collapsible content area
 		const collapsibleContent = document.createElement('div');
 		collapsibleContent.classList.add('collapsible-content');
-		collapsibleContent.style.maxHeight = '0';  // Initially collapsed
-		collapsibleContent.style.overflow = 'hidden';
-		collapsibleContent.style.transition = 'max-height 0.3s ease-out';
+		collapsibleContent.classList.add('content-expanded');
 
 		panel.appendChild(collapsibleContent);
 
 		// Create an editable textarea for the file content
 		const editableContent = document.createElement('textarea');
+		editableContent.classList.add('editable-content');
 		editableContent.value = content;
-		editableContent.style.width = '100%';
-		editableContent.style.height = '300px';
-		editableContent.style.fontSize = '16px';
 
 		collapsibleContent.appendChild(editableContent);
 
 		// Add event listener to toggle the panel on button click
 		toggleButton.addEventListener('click', () => {
-			if (collapsibleContent.style.maxHeight === '0px' || !collapsibleContent.style.maxHeight) {
-				collapsibleContent.style.maxHeight = collapsibleContent.scrollHeight + 'px';  // Expand
-			} else {
-				collapsibleContent.style.maxHeight = '0';  // Collapse
-			}
+			toggleButton.classList.toggle('toggle-expanded');
+			collapsibleContent.classList.toggle('content-expanded');
+			console.log('editable content scroll height:', editableContent.scrollHeight);
 		});
 
-	// 	// Create a container for the collapsible section
-	// 	const collapsibleContainer = document.createElement('div');
-	// 	collapsibleContainer.classList.add('collapsible-container');
-	// 	const header = document.createElement('div');
-	// 	header.classList.add('journal-entry-header');
-	// 	panel.appendChild(header);
+		// Save edits to the original file when the content changes
+		editableContent.addEventListener('input', async () => {
+			await this.app.vault.modify(file, editableContent.value);
+		});
 
-	// 	// Create the toggle button
-	// 	// const toggleButton = document.createElement('button');
-	// 	// toggleButton.textContent = '';
-	// 	// toggleButton.classList.add('collapsible-toggle');
-	// 	// header.appendChild(toggleButton);
+		journalContainer.appendChild(editableContent);
+		collapsibleContent.appendChild(journalContainer);  // Append journal entry to the collapsible panel
 
-	// 	// Create the toggle button
-	// 	const toggleButton = document.createElement('button');
-	// 	toggleButton.textContent = 'Toggle Journal View';
-	// 	toggleButton.classList.add('collapsible-toggle');
-	// 	header.appendChild(toggleButton);
-
-	// 	const journalEntryTitle = document.createElement('h1');
-	// 	journalEntryTitle.classList.add('journal-entry-title');
-	// 	journalEntryTitle.textContent = file.basename;
-	// 	header.appendChild(journalEntryTitle);
-
-	// 	// const collapsibleJournalEntry = document.createElement('div');
-	// 	// collapsibleJournalEntry.classList.add('collapsible-journal-entry');
-	// 	// collapsibleJournalEntry.style.maxHeight = '300px';
-	// 	// collapsibleJournalEntry.style.overflow = 'hidden';
-	// 	// collapsibleJournalEntry.style.transition = 'max-height 0.3s ease-out';
-	// 	// journalContainer.appendChild(collapsibleJournalEntry);
-
-	// 	// Create a div for the collapsible content (the panel where journal entries are added)
-	// 	const collapsibleContent = document.createElement('div');
-	// 	collapsibleContent.classList.add('collapsible-content');
-	// 	collapsibleContent.style.maxHeight = '0';  // Initially collapsed
-	// 	collapsibleContent.style.overflow = 'hidden';
-	// 	collapsibleContent.style.transition = 'max-height 0.3s ease-out';
-	// 	collapsibleContainer.appendChild(collapsibleContent);
-
-	// 	const editableContent = document.createElement('textarea');
-	// 	editableContent.value = content; // Populate with file content
-	// 	editableContent.style.width = '100%';
-	// 	editableContent.style.height = '300px';
-
-	// 	// Update file content on edit
-	// 	editableContent.addEventListener('input', async () => {
-	// 		await this.app.vault.modify(file, editableContent.value); // Save edits to the file
-	// 	});
-
-	// 	// Add event listener to the toggle button to expand/collapse content
-	// 	toggleButton.addEventListener('click', () => {
-	// 		// Check if it's currently collapsed
-	// 		if (collapsibleContent.style.maxHeight === '0px' || !collapsibleContent.style.maxHeight) {
-	// 			// Expand the content
-	// 			collapsibleContent.style.maxHeight = collapsibleContent.scrollHeight + 'px';
-	// 		} else {
-	// 			// Collapse the content
-	// 			collapsibleContent.style.maxHeight = '0';
-	// 		}
-	// 	});
-
-	// 	const horizontalRule = document.createElement('hr');
-	// 	horizontalRule.classList.add('journal-horizontal-hr');
-
-	// 	// Append the rule to your container
-	// 	panel.appendChild(horizontalRule);
-	// 	document.body.appendChild(collapsibleContainer);
-
-	// Save edits to the original file when the content changes
-	editableContent.addEventListener('input', async () => {
-		await this.app.vault.modify(file, editableContent.value);
-
-	
-	journalContainer.appendChild(editableContent);
-	panel.appendChild(journalContainer);  // Append journal entry to the collapsible panel
-	
-	});
-
-
-
-
-		// async showJournalsInCustomPanel() {
-		// 	const journalFiles = this.getJournalFiles();
-		
-		// 	if (journalFiles.length === 0) {
-		// 		new Notice('No journal files found.');
-		// 		return;
-		// 	}
-		
-			// Create the collapsible container
-			// const collapsibleContainer = document.createElement('div');
-			// collapsibleContainer.classList.add('collapsible-container');
-		
-			// Create the toggle button
-			// const toggleButton = document.createElement('button');
-			// toggleButton.textContent = 'Toggle Journal View';
-			// toggleButton.classList.add('collapsible-toggle');
-			// collapsibleContainer.appendChild(toggleButton);
-		
-			// Create the collapsible content area
-			// const collapsibleContent = document.createElement('div');
-			// collapsibleContent.classList.add('collapsible-content');
-			// collapsibleContent.style.maxHeight = '0';  // Initially collapsed
-			// collapsibleContent.style.overflow = 'hidden';
-			// collapsibleContent.style.transition = 'max-height 0.3s ease-out';
-		
-			// collapsibleContainer.appendChild(collapsibleContent);
-		
-			// Add event listener to toggle the panel on button click
-			// toggleButton.addEventListener('click', () => {
-			// 	if (collapsibleContent.style.maxHeight === '0px' || !collapsibleContent.style.maxHeight) {
-			// 		collapsibleContent.style.maxHeight = collapsibleContent.scrollHeight + 'px';  // Expand
-			// 	} else {
-			// 		collapsibleContent.style.maxHeight = '0';  // Collapse
-			// 	}
-			// });
-		
-			// Add each journal file's content to the collapsible content area
-			// for (const file of journalFiles) {
-			// 	const fileContent = await this.app.vault.read(file);
-			// 	this.addJournalToPanel(collapsibleContent, file, fileContent);
-			// }
-		
-			// Append the entire collapsible panel to the workspace (or a specific leaf)
-			// this.app.workspace.containerEl.appendChild(collapsibleContainer);
-		// }
-		
-		// Function to add each journal file content to the collapsible panel
-		// addJournalToPanel(panel: HTMLElement, file: TFile, content: string) {
-		// 	const journalContainer = document.createElement('div');
-		// 	journalContainer.classList.add('journal-entry');
-		// 	journalContainer.style.marginBottom = '20px';
-		
-			// Add a header for the journal entry
-			// const header = document.createElement('h3');
-			// header.textContent = file.basename;
-			// journalContainer.appendChild(header);
-		
-			// Create an editable textarea for the file content
-			// const editableContent = document.createElement('textarea');
-			// editableContent.value = content;
-			// editableContent.style.width = '100%';
-			// editableContent.style.height = '300px';
-			// editableContent.style.fontSize = '16px';
-		
-			// Save edits to the original file when the content changes
-			// editableContent.addEventListener('input', async () => {
-			// 	await this.app.vault.modify(file, editableContent.value);
-			// });
-		
-			// journalContainer.appendChild(editableContent);
-			// panel.appendChild(journalContainer);  // Append journal entry to the collapsible panel
-		
-		
-
-
+		const horizontalRule = document.createElement('hr');
+		horizontalRule.classList.add('journal-horizontal-hr');
+		panel.appendChild(horizontalRule);
 	}
 
 	onunload() {
-		console.log('Journal Page Plugin unloaded.');
 	}
 
 
