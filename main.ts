@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting } from 'obsidian';
+import { format } from 'path';
 import { text } from 'stream/consumers';
 
 interface journalingPluginSettings {
@@ -125,6 +126,8 @@ export default class journalingPlugin extends Plugin {
 	
 	// Helper function to add each journal entry to the panel
 	addJournalToPanel(panel: HTMLElement, file: TFile, content: string) {
+		const journalDate = file.basename;
+
 		// Add a header for the journal entry
 		const journalEntryHeader = document.createElement('div');
 		journalEntryHeader.classList.add('journal-entry-header');
@@ -138,8 +141,10 @@ export default class journalingPlugin extends Plugin {
 
 		// Add a link for the journal entry title leading to the original file
 		const journalEntryTitle = document.createElement('h3');
+		journalEntryTitle.classList.add('journal-entry-title');
 		const journalEntryLink = document.createElement('a')
-		journalEntryLink.textContent = file.basename;
+		journalEntryLink.classList.add('journal-entry-link');
+		journalEntryLink.textContent = formatDate(journalDate);
 		journalEntryLink.style.cursor = 'pointer';
 		journalEntryTitle.appendChild(journalEntryLink);
 		journalEntryHeader.appendChild(journalEntryTitle);
@@ -172,6 +177,12 @@ export default class journalingPlugin extends Plugin {
 			editableContent.style.height = editableContent.scrollHeight + 'px';
 		});
 
+		// Event listener to adjust the height of the textarea on window resize
+		window.addEventListener('resize', e => {
+			editableContent.style.height = 'auto';
+			editableContent.style.height = editableContent.scrollHeight + 'px';
+		});
+
 		// Add event listener to toggle the panel on button click
 		toggleButton.addEventListener('click', () => {
 			toggleButton.classList.toggle('toggle-expanded');
@@ -183,10 +194,41 @@ export default class journalingPlugin extends Plugin {
 			await this.app.vault.modify(file, editableContent.value);
 		});
 
-		const horizontalRule = document.createElement('hr');
-		horizontalRule.classList.add('journal-horizontal-hr');
-		panel.appendChild(horizontalRule);
+		// const horizontalRule = document.createElement('hr');
+		// horizontalRule.classList.add('journal-horizontal-hr');
+		// panel.appendChild(horizontalRule);
+
+		// Helper function to format the date for the each journal entry title
+
+		function formatDate(journalDate: String): string {
+			const rawDate = new Date(journalDate as string);
+			const dateFormatOptions: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric', day: 'numeric' };
+
+			// Format date using Intl.DateTimeFormat
+			const formattedDate = new Intl.DateTimeFormat('en-US', dateFormatOptions).format(rawDate);
+
+			// Extract day and add ordinal suffix (e.g., 'st', 'nd', 'rd', 'th')
+			const day = rawDate.getDate();
+			const daySuffix = getDaySuffix(day);
+
+			// Build the final formatted string
+			const parts = formattedDate.split(' ');
+			return `${parts[0]} ${day}${daySuffix}, ${parts[2]}`;
+		}
+
+		// Helper function to determine the appropriate ordinal suffix
+		function getDaySuffix(day: number): string {
+			if (day > 3 && day < 21) return 'th'; // Special case for 11th-19th
+			switch (day % 10) {
+				case 1: return 'st';
+				case 2: return 'nd';
+				case 3: return 'rd';
+				default: return 'th';
+			}
+		}
 	}
+
+	// || --- Plugin methods ---
 
 	onunload() {
 	}

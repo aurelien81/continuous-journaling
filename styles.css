@@ -11,6 +11,10 @@
     align-items: center;
     position: relative;
     width: 100%;
+    border-top: 1px solid white;
+        &:first-child {
+            border-top: none;
+        }
 }
 
 .collapsible-toggle {
@@ -37,15 +41,17 @@
 }
 
 .collapsible-content {
+    display: flex;
+    justify-content: center;
     max-height: 0px;
     overflow: hidden;
     transition: max-height 0.1s ease-out;
 }
 
-.journal-entry {
-    width: 100%;
-    margin-bottom: 20px;
-    background: blue !important;
+.journal-entry-link {
+    text-decoration: none;
+    color: var(--text-normal);
+    font-size: 1.5em;
 }
 
 .content-expanded {
@@ -57,19 +63,18 @@
     border: none;
     outline: none;
     background: none;
-    width: 100%;
-    /* height: auto; */
-    font-size: 16px;
+    width: 85%;
+    font-size: 1.2em;
     padding: 10px;
 }
 
-.journal-horizontal-hr {
+/* .journal-horizontal-hr {
     margin: 10px 10px;
     border: none;
     height: 1px;
     width: 95%;
     background-color: white;
-} 
+}  */
 
 
 
