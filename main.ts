@@ -128,10 +128,14 @@ export default class journalingPlugin extends Plugin {
 	addJournalToPanel(panel: HTMLElement, file: TFile, content: string) {
 		const journalDate = file.basename;
 
+		const journalEntry = document.createElement('div');
+		journalEntry.classList.add('journal-entry');
+		panel.appendChild(journalEntry);
+
 		// Add a header for the journal entry
 		const journalEntryHeader = document.createElement('div');
 		journalEntryHeader.classList.add('journal-entry-header');
-		panel.appendChild(journalEntryHeader);
+		journalEntry.appendChild(journalEntryHeader);
 
 		// Create the toggle button
 		const toggleButton = document.createElement('button');
@@ -158,7 +162,7 @@ export default class journalingPlugin extends Plugin {
 		const collapsibleContent = document.createElement('div');
 		collapsibleContent.classList.add('collapsible-content');
 		collapsibleContent.classList.add('content-expanded');
-		panel.appendChild(collapsibleContent);
+		journalEntry.appendChild(collapsibleContent);
 
 		// Create an editable textarea for the file content
 		const editableContent = document.createElement('textarea');
@@ -194,12 +198,7 @@ export default class journalingPlugin extends Plugin {
 			await this.app.vault.modify(file, editableContent.value);
 		});
 
-		// const horizontalRule = document.createElement('hr');
-		// horizontalRule.classList.add('journal-horizontal-hr');
-		// panel.appendChild(horizontalRule);
-
 		// Helper function to format the date for the each journal entry title
-
 		function formatDate(journalDate: String): string {
 			const rawDate = new Date(journalDate as string);
 			const dateFormatOptions: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric', day: 'numeric' };
