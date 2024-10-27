@@ -18,6 +18,10 @@
         &:first-child {
             border-top: none;
         }
+        & .external-embed {
+            width: 100% !important;
+            height: 350px !important;
+        }
 }
 
 .journal-entry-header {
@@ -68,7 +72,12 @@
     max-height: 100vh;
 }
 
+.rendered-content {
+    display: none;
+}
+
 .editable-content {
+    display: none;
     resize: none;
     border: none !important;
     outline: none !important;
@@ -85,6 +94,10 @@
     box-shadow: none;
 }
 
+.active-view {
+    display: block;
+    max-height: 100vh;
+}
 
 
 

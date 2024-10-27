@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting, MarkdownRenderer } from 'obsidian';
 import { format } from 'path';
 import { text } from 'stream/consumers';
 
@@ -164,15 +164,45 @@ export default class journalingPlugin extends Plugin {
 		collapsibleContent.classList.add('content-expanded');
 		journalEntry.appendChild(collapsibleContent);
 
+		const renderedContent = document.createElement('div');
+		renderedContent.classList.add('rendered-content');
+		renderedContent.classList.add('active-view');
+
 		// Create an editable textarea for the file content
 		const editableContent = document.createElement('textarea');
 		editableContent.classList.add('editable-content');
 		editableContent.value = content;
+
+		collapsibleContent.appendChild(renderedContent);
 		collapsibleContent.appendChild(editableContent);
 
 		// Use requestAnimationFrame to ensure rendering is done for each element
 		requestAnimationFrame(() => {
 			editableContent.style.height = editableContent.scrollHeight + 'px';
+		});
+
+		// Render markdown content in the container
+		const renderContent = () => {
+			renderedContent.innerHTML = ''; // Clear existing content
+			MarkdownRenderer.render(this.app, content, renderedContent, file.path, this);
+		};
+
+		// Initial render
+		renderContent();
+
+		// Enter edit mode when clicking on the rendered content
+		renderedContent.addEventListener('click', () => {
+			renderedContent.classList.toggle('active-view');
+			editableContent.classList.toggle('active-view');
+			editableContent.style.height = 'auto';
+			editableContent.style.height = editableContent.scrollHeight + 'px';
+		});
+
+		editableContent.addEventListener('blur', async () => {
+			content = editableContent.value; // Update content
+			renderContent();
+			renderedContent.classList.toggle('active-view');
+			editableContent.classList.toggle('active-view');
 		});
 
 		// Event listener to adjust the height of the textarea on input
