@@ -1,4 +1,4 @@
-# Obsidian Journaling
+# Continuous Journaling for Obsidian
 
 A plugin for obsidian that displays the journals in one Logseq-like continuous page.
 

@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "continuous-journaling",
+	"version": "0.1.0",
+	"description": "A plugin for obsidian that displays the journals in one Logseq-like continuous page.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
