@@ -14,7 +14,7 @@
 .journal-entry {
     width: 85%;
     margin: 20px 0;
-    border-top: 1px solid white;
+    border-top: var(--border-width) solid var(--color-base-100);
         &:first-child {
             border-top: none;
         }
@@ -56,13 +56,13 @@
 
 .collapsible-content {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     max-height: 0px;
     overflow: hidden;
     transition: max-height 0.1s ease-out;
 }
 
-.journal-entry-link {
+.journal-entry-link, .journal-entry-link:hover, .journal-entry-link:hover:visited {
     text-decoration: none;
     color: var(--text-normal);
     font-size: 1.5em;
@@ -74,6 +74,8 @@
 
 .rendered-content {
     display: none;
+    min-height: 100px;
+    width: 100%;
 }
 
 .editable-content {
@@ -99,7 +101,9 @@
     max-height: 100vh;
 }
 
-
+.cm-hashtag {
+    cursor: var(--cursor-link);
+}
 
 
 

@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting, MarkdownRenderer } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile, PluginSettingTab, Setting, MarkdownRenderer, ItemView, WorkspaceLeaf } from 'obsidian';
 import { format } from 'path';
 import { text } from 'stream/consumers';
 
@@ -18,21 +18,21 @@ export default class journalingPlugin extends Plugin {
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('notebook-text', 'Journals', async (evt: MouseEvent) => {
-			await this.showJournalsInLeaf();
+			await this.createDailyNote();
 		});
 		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+		ribbonIconEl.addClass('journaling-ribbon-icon');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		// const statusBarItemEl = this.addStatusBarItem();
+		// statusBarItemEl.setText('Status Bar Text');
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
 			id: 'open-journal-page',
 			name: 'Open Journal Page',
 			callback: () => {
-				this.showJournalsInLeaf();
+				this.createDailyNote();
 			},
 		});
 		// This adds an editor command that can perform some operation on the current editor instance
@@ -65,7 +65,7 @@ export default class journalingPlugin extends Plugin {
 	}
 
 	// || --- journal files management ---
-
+	
 	// Find all journal/daily note files
 	getJournalFiles(): TFile[] {
 		// Get all markdown files in the vault
@@ -85,7 +85,36 @@ export default class journalingPlugin extends Plugin {
 
 	// || --- Panel creation inside new tab ---
 
+	async createDailyNote() {
+		// Format today's date as YYYY-MM-DD
+		const today = new Date();
+		const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+		const filePath = `${formattedDate}.md`; // Adjust this if you want a different naming format
+	
+		// Check if the note already exists
+		let file = this.app.vault.getAbstractFileByPath(filePath);
+	
+		if (!file) {
+			// If the file doesn't exist, create it
+			const initialContent = '';
+			file = await this.app.vault.create(filePath, initialContent);
+			return this.showJournalsInLeaf();
+		} 
+	
+		// Ensure file is of type TFile before opening
+		if (!(file instanceof TFile)) {
+			console.error(`The abstract file is not a valid TFile:`, file);
+			return; // Exit if it's not a TFile
+		} else {
+			return this.showJournalsInLeaf();
+		}
+	}
+
 	async showJournalsInLeaf() {
+		// Create a scrollable panel for journal entries
+		const panel = document.createElement('div');
+		panel.classList.add('custom-journal-panel');
+
 		const journalFiles = this.getJournalFiles();
 	
 		if (journalFiles.length === 0) {
@@ -95,22 +124,17 @@ export default class journalingPlugin extends Plugin {
 	
 		// Create a new leaf (opens a new tab)
 		const leaf = this.app.workspace.getLeaf(true);
-	
+
 		// Set the view state to Markdown to access containerEl
 		await leaf.setViewState({
-			type: "markdown", // Set to markdown view type
-			active: true
+			type: "markdown",
+			active: true,
 		});
 
 		// Access the container element of the markdown view
 		const contentElement = leaf.view.containerEl; // Use containerEl to access the element
-	
+			
 		contentElement.empty(); // Clear the content area if necessary
-	
-		// Create a scrollable panel for journal entries
-		const panel = document.createElement('div');
-		panel.classList.add('custom-journal-panel');
-
 	
 		// Add content for each journal file
 		for (const file of journalFiles) {
@@ -121,6 +145,7 @@ export default class journalingPlugin extends Plugin {
 		// Append the custom panel to the leaf's container element
 		contentElement.appendChild(panel);
 	}
+
 
 	// || --- Detailed UI creation/update ---
 	
@@ -181,21 +206,37 @@ export default class journalingPlugin extends Plugin {
 			editableContent.style.height = editableContent.scrollHeight + 'px';
 		});
 
-		// Render markdown content in the container
+		// Function to render Markdown
 		const renderContent = () => {
-			renderedContent.innerHTML = ''; // Clear existing content
+			renderedContent.innerHTML = '';
+
 			MarkdownRenderer.render(this.app, content, renderedContent, file.path, this);
-		};
+		}
 
 		// Initial render
 		renderContent();
 
-		// Enter edit mode when clicking on the rendered content
-		renderedContent.addEventListener('click', () => {
+		// Enter edit mode
+		function enterEditMode() {
 			renderedContent.classList.toggle('active-view');
 			editableContent.classList.toggle('active-view');
 			editableContent.style.height = 'auto';
 			editableContent.style.height = editableContent.scrollHeight + 'px';
+			editableContent.focus();
+		}
+
+		// Add a click event listener to the container
+		renderedContent.addEventListener('click', (event) => {
+			const target = event.target as HTMLElement;
+
+			if (editableContent.innerHTML.trim() === '') {
+				enterEditMode(); // Call your edit mode function
+			} else if (target.tagName === 'A' || target.closest('a') || target.classList.contains('cm-hastagh') || target.closest('.cm-hashtag')) {
+				return;
+			} else {
+				// Otherwise, trigger the editing mode
+				enterEditMode();
+			}
 		});
 
 		editableContent.addEventListener('blur', async () => {
