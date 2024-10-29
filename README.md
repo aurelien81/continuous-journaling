@@ -6,8 +6,8 @@ After installing this plugin, a new item is added to the obsidian ribbon. Clicki
 
 Each time the journals tab is triggered, a new daily note for the day is create if that daily note doesn't already exist.
 
-![Dark Mode](assets/pluginPresentation-dark.png)
-![Light Mode](assets/pluginPresentation-light.png)
+![Dark Mode](assets/pluginPresentation-darkv2.png)
+![Light Mode](assets/pluginPresentation-lightv2.png)
 
 # Context
 
