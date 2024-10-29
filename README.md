@@ -10,8 +10,9 @@ Each time the journals tab is triggered, a new daily note for the day is create 
 ![Light Mode](assets/pluginPresentation-lightv2.png)
 
 # Context
+- I love the never ending journals scroll from Logseq but unfortunately, between Obsidian, Logseq, and other apps, I find myself using more apps than I want simply because each app has functions that I need for deferent types of projects. This is my first attempt at unifying those functions into one app.
 
-This is my first plugin for obsidian, so please be kind, I am doing my best and will continue to improve it. Make sure to raise issues if you see things that can be improved, changed, I will be happy to work on it.
+- This is my first plugin for obsidian, so please be kind, I am doing my best and will continue to improve it. Make sure to raise issues if you see things that can be improved, changed, I will be happy to work on it.
 
 # Upcoming Improvements
 
@@ -27,7 +28,7 @@ https://buymeacoffee.com/5svinkxxo5.
 
 Make sure to head to [Github](https://github.com/aurelien81/obsidian-journaling) to raise issues or ask questions.
 
-<a href="https://www.buymeacoffee.com/5SviNkXXo5" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Book" style="height: 28px !important;width: 100px !important;" ></a>
+<a href="https://www.buymeacoffee.com/5SviNkXXo5" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Book" style="height: 60px !important;width: 217px !important;" ></a>
 
 
 
