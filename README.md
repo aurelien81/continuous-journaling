@@ -8,8 +8,8 @@ Each time the journals tab is triggered, a new daily note for the day is create 
 
 The 'Daily Notes' core plugin is not necessary for this plugin to function.
 
-![Dark Mode](assets/pluginPresentation-darkv2.png)
-![Light Mode](assets/pluginPresentation-lightv2.png)
+![Dark Mode](./resources/screenshots/pluginPresentation-darkv2.png)
+![Light Mode](./resources/screenshots/pluginPresentation-lightv2.png)
 
 # Context
 - I love the never ending journals scroll from Logseq but unfortunately, between Obsidian, Logseq, and other apps, I find myself using more apps than I want simply because each app has functions that I need for deferent types of projects. This is my first attempt at unifying those functions into one app.

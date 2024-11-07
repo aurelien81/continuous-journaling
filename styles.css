@@ -66,6 +66,7 @@
     text-decoration: none;
     color: var(--text-normal);
     font-size: 1.5em;
+    cursor: pointer;
 }
 
 .content-expanded {
@@ -99,6 +100,7 @@
 .active-view {
     display: block;
     max-height: 100vh;
+    height: auto;
 }
 
 .cm-hashtag {

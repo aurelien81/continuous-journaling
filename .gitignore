@@ -1,1 +1,10 @@
+# vscode
+.vscode
+package-lock.json
+
+# npm
+node_modules
+
+# build
 main.js
+
