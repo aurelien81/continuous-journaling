@@ -107,14 +107,16 @@
     cursor: var(--cursor-link);
 }
 
+/* Error styling */
+.journal-error {
+    background-color: var(--background-modifier-error-rgb, rgba(230, 0, 0, 0.1));
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
 
-
-
-
-
-
-
-
-
-
-
+.journal-error-content {
+    padding: 10px;
+    color: var(--text-error);
+    font-weight: 500;
+}
