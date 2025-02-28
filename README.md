@@ -1,36 +1,69 @@
 # Continuous Journaling for Obsidian
 
-A plugin for obsidian that displays the journals in one Logseq-like continuous page.
+A plugin for Obsidian that displays journal entries in one Logseq-like continuous page.
 
-After installing this plugin, a new item is added to the obsidian ribbon. Clicking on this item creates a new tab that displays all the daily notes into one scrollable page. The notes are editable individually, and those edits are reflected in the original notes.
+## Features
 
-Each time the journals tab is triggered, a new daily note for the day is create if that daily note doesn't already exist.
+- **Continuous Journal View**: View all your daily journal entries in a single scrollable page
+- **In-place Editing**: Edit journal entries directly in the continuous view
+- **Dedicated Journal Folder**: Keep your journal entries organized in a dedicated folder
+- **Automatic Creation**: Automatically creates today's journal entry when needed
+- **Collapsible Entries**: Easily collapse and expand entries for better navigation
+- **Customizable Settings**: Configure folder location, date format, and display preferences
 
-The 'Daily Notes' core plugin is not necessary for this plugin to function.
+## How to Use
 
-![Dark Mode](./resources/screenshots/pluginPresentation-darkv2.png)
-![Light Mode](./resources/screenshots/pluginPresentation-lightv2.png)
+After installing this plugin:
 
-# Context
-- I love the never ending journals scroll from Logseq but unfortunately, between Obsidian, Logseq, and other apps, I find myself using more apps than I want simply because each app has functions that I need for deferent types of projects. This is my first attempt at unifying those functions into one app.
+1. A new ribbon icon (notebook) is added to the left sidebar
+2. Click the icon to open the continuous journal view
+3. The view displays all your journal entries in one scrollable page
+4. Click on an entry's content to edit it directly
+5. Click on an entry's title to open it in a separate tab
+6. Use the toggle button to collapse/expand entries
 
-- This is my first plugin for obsidian, so please be kind, I am doing my best and will continue to improve it. Make sure to raise issues if you see things that can be improved, changed, I will be happy to work on it.
+## Settings
 
-# Upcoming Improvements
+- **Journal Folder**: Specify where journal entries are stored (default: "journals")
+- **Date Format**: Format for journal filenames (default: "YYYY-MM-DD")
+- **Sort Direction**: Display newest entries first or oldest entries first
+- **Default Expand Entries**: Whether entries should be expanded by default
 
-- Settings: choose in which the new daily note is created
-- Settings: automatically create a 'journals' folder and move all current daily notes into the folder
-- fix the global search when clicking on tags
-- Refactoring to clean up the current code (separation of tasks, etc.)
+## Installation
 
-# Say Thank You
+### From Obsidian Community Plugins
 
-If you are enjoying Obsidian Journaling, then please support my work and enthusiasm by buying me a book on
-https://buymeacoffee.com/5svinkxxo5.
+1. Open Obsidian Settings
+2. Go to Community Plugins
+3. Browse and search for "Continuous Journaling"
+4. Click Install and then Enable
 
-Make sure to head to [Github](https://github.com/aurelien81/obsidian-journaling) to raise issues or ask questions.
+### Manual Installation
 
-<a href="https://www.buymeacoffee.com/5SviNkXXo5" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Book" style="height: 60px !important;width: 217px !important;" ></a>
+1. Download the latest release from the GitHub repository
+2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins/` directory
+3. Reload Obsidian
+4. Enable the plugin in Obsidian settings
 
+## Why Use Continuous Journaling?
 
+- **Seamless Experience**: View and edit all your journal entries without leaving the current context
+- **Easy Navigation**: Quickly scroll through your journal history
+- **Organization**: Keep your journal entries separate from other notes
+- **Familiar Interface**: If you're coming from Logseq, you'll feel right at home
 
+## Support
+
+If you enjoy Continuous Journaling, please consider supporting the developer by buying them a coffee:
+
+<a href="https://www.buymeacoffee.com/5SviNkXXo5" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Book" style="height: 60px !important;width: 217px !important;">
+</a>
+
+## Credits
+
+Developed by Aurélien Lainé
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

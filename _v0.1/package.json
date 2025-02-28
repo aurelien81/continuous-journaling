@@ -1,22 +1,15 @@
 {
 	"name": "continuous-journaling",
-	"version": "0.2.0",
-	"description": "A plugin for obsidian that displays journals in one Logseq-like continuous page.",
+	"version": "0.1.0",
+	"description": "A plugin for obsidian that displays the journals in one Logseq-like continuous page.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": [
-		"obsidian",
-		"plugin",
-		"journal",
-		"journaling",
-		"daily",
-		"notes"
-	],
-	"author": "Aurélien Lainé",
+	"keywords": [],
+	"author": "",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",

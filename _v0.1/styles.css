@@ -1,0 +1,122 @@
+.custom-journal-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: top;
+    width: 100%;
+    overflow-y: scroll;
+    height: 100vh;
+    padding: 10px;
+    border: none;
+    background: var(--background-primary);
+}
+
+.journal-entry {
+    width: 85%;
+    margin: 20px 0;
+    border-top: var(--border-width) solid var(--color-base-100);
+        &:first-child {
+            border-top: none;
+        }
+        & .external-embed {
+            width: 100% !important;
+            height: 350px !important;
+        }
+}
+
+.journal-entry-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.collapsible-toggle {
+    margin: 0 5px;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 10px;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.collapsible-toggle:after {
+    font-family: 'fontawesome';
+    content: "\f054";
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 200;
+    line-height: 1.556em;
+    vertical-align: middle;
+}
+
+.collapsible-toggle.toggle-expanded:after {
+    content: "\f078";
+}
+
+.collapsible-content {
+    display: flex;
+    justify-content: left;
+    max-height: 0px;
+    overflow: hidden;
+    transition: max-height 0.1s ease-out;
+}
+
+.journal-entry-link, .journal-entry-link:hover, .journal-entry-link:hover:visited {
+    text-decoration: none;
+    color: var(--text-normal);
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.content-expanded {
+    max-height: 100vh;
+}
+
+.rendered-content {
+    display: none;
+    min-height: 100px;
+    width: 100%;
+}
+
+.editable-content {
+    display: none;
+    resize: none;
+    border: none !important;
+    outline: none !important;
+    background: none;
+    width: 100%;
+    font-size: 1.2em;
+    padding: 10px;
+}
+
+.editable-content:focus {
+    outline: none;
+    border: none;
+    background: none;
+    box-shadow: none;
+}
+
+.active-view {
+    display: block;
+    max-height: 100vh;
+    height: auto;
+}
+
+.cm-hashtag {
+    cursor: var(--cursor-link);
+}
+
+/* Error styling */
+.journal-error {
+    background-color: var(--background-modifier-error-rgb, rgba(230, 0, 0, 0.1));
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
+
+.journal-error-content {
+    padding: 10px;
+    color: var(--text-error);
+    font-weight: 500;
+}
