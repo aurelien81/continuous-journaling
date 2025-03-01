@@ -1,0 +1,7 @@
+{
+  "journalFolder": "journals",
+  "dateFormat": "YYYY-MM-DD",
+  "sortDirection": "newest-first",
+  "defaultExpandEntries": true,
+  "sideBySideEditing": true
+}
