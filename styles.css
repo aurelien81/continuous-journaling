@@ -222,15 +222,6 @@
     to { opacity: 0; }
 }
 
-/* Add these styles to your existing CSS file */
-
-/* Drag and drop styling */
-.editable-content.is-dragging-over {
-    background-color: var(--background-modifier-hover) !important;
-    border: 2px dashed var(--interactive-accent) !important;
-    padding: 8px !important; /* Adjust padding to account for the border */
-}
-
 /* Image display in journal entries */
 .journal-entry img {
     max-width: 100%;
@@ -240,8 +231,3 @@
     border-radius: 4px;
 }
 
-/* Make sure the textarea accepts drag and drop */
-.editable-content {
-    /* Add to existing styles */
-    cursor: text;
-}

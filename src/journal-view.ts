@@ -3,6 +3,10 @@ import JournalingPlugin from './main';
 import { formatDateForDisplay } from './utils/date-utils';
 import { getJournalFiles, sortJournalFiles } from './utils/file-utils';
 
+let clickType: 'left' | 'right' | null = null;
+let needsRendering = false;
+let isContextMenuOpen = false;
+
 export class JournalView {
     plugin: JournalingPlugin;
     
@@ -112,6 +116,9 @@ export class JournalView {
         // Track the current content
         let currentContent = content;
         
+        // Flag to track if the entry is in edit mode
+        let isEditing = false;
+        
         // Create the rendered content view
         const renderedContent = contentArea.createDiv({ 
             cls: 'rendered-content active-view' 
@@ -134,9 +141,6 @@ export class JournalView {
             editableContent.style.height = editableContent.scrollHeight + 'px';
         });
         
-        // Flag to track if we're in a drag operation
-        let isDragging = false;
-        
         // Function to render the markdown content
         const renderContent = () => {
             renderedContent.empty();
@@ -148,6 +152,9 @@ export class JournalView {
         
         // Function to enter edit mode
         const enterEditMode = () => {
+            // Set editing flag
+            isEditing = true;
+            
             // Make sure textarea has current content
             editableContent.value = currentContent;
             
@@ -163,10 +170,8 @@ export class JournalView {
         
         // Function to exit edit mode
         const exitEditMode = async () => {
-            // If we're currently dragging, don't exit edit mode
-            if (isDragging) {
-                return;
-            }
+            // Clear the editing flag
+            isEditing = false;
             
             // Get current content from textarea
             currentContent = editableContent.value;
@@ -181,10 +186,12 @@ export class JournalView {
             editableContent.classList.remove('active-view');
             renderedContent.classList.add('active-view');
         };
-        
-        // Click on rendered content to edit
+
         renderedContent.addEventListener('click', (event) => {
             const target = event.target as HTMLElement;
+            
+            // Determine if this is a right-click
+            const isRightClick = event.button === 2;
             
             // Don't enter edit mode if clicking on links or hashtags
             if (target.tagName === 'A' || target.closest('a') || 
@@ -192,66 +199,17 @@ export class JournalView {
                 return;
             }
             
-            // Enter edit mode
-            enterEditMode();
+            // Enter edit mode if not a right-click
+            if (!isRightClick) {
+                enterEditMode();
+            }
         });
         
-        // Exit edit mode when textarea loses focus (but not during drag operations)
-        editableContent.addEventListener('blur', () => {
-            // Add a small delay to check if we're in a drag operation
-            setTimeout(() => {
-                exitEditMode();
-            }, 100);
-        });
-        
-        // Handle Escape key to exit edit mode
+        // Manual save/exit when pressing Escape
         editableContent.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                editableContent.blur();
+                exitEditMode();
             }
-        });
-        
-        // Drag events for handling image drops
-        editableContent.addEventListener('dragenter', (event) => {
-            isDragging = true;
-            event.preventDefault();
-            editableContent.classList.add('is-dragging-over');
-        });
-        
-        editableContent.addEventListener('dragover', (event) => {
-            event.preventDefault();
-        });
-        
-        editableContent.addEventListener('dragleave', () => {
-            editableContent.classList.remove('is-dragging-over');
-        });
-        
-        editableContent.addEventListener('drop', async (event) => {
-            event.preventDefault();
-            editableContent.classList.remove('is-dragging-over');
-            
-            // Handle file drops (images)
-            if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-                try {
-                    // Process each dropped file
-                    for (let i = 0; i < event.dataTransfer.files.length; i++) {
-                        const file = event.dataTransfer.files[i];
-                        
-                        // Check if it's an image
-                        if (file.type.startsWith('image/')) {
-                            await this.handleImageDrop(file, editableContent, this.plugin.settings.journalFolder);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error handling dropped files:', error);
-                    new Notice(`Error handling dropped files: ${error}`);
-                }
-            }
-            
-            // Reset dragging state
-            setTimeout(() => {
-                isDragging = false;
-            }, 200);
         });
         
         // Auto-adjust textarea height while typing
@@ -262,7 +220,60 @@ export class JournalView {
             // Update current content while typing
             currentContent = editableContent.value;
         });
-        
+
+        // Track click type on mousedown
+        editableContent.addEventListener('mousedown', (event) => {
+            switch (event.button) {
+                case 0: // Left click
+                    clickType = 'left';
+                    break;
+                case 2: // Right click
+                    clickType = 'right';
+                    break;
+            }
+        });
+
+        // Track left-click for potential rendering need
+        editableContent.addEventListener('click', (event) => {
+            // If clicked outside of textarea, mark for rendering
+            if (event.target !== editableContent) {
+                needsRendering = true;
+            }
+        });
+
+        // Handle context menu to prevent default right-click behavior
+        editableContent.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
+        // Handle blur event
+        editableContent.addEventListener('blur', (event) => {
+            setTimeout(() => {
+                // Render if:
+                // 1. Needs rendering is true, or
+                // 2. It was a left click outside the textarea
+                if (needsRendering || (clickType === 'left' && !event.relatedTarget)) {
+                    renderContent();
+                    needsRendering = false;
+                }
+
+                // Exit edit mode if it was a left click
+                if (clickType === 'left' && !event.relatedTarget) {
+                    exitEditMode();
+                }
+
+                // Reset states
+                clickType = null;
+            }, 100);
+        });
+
+        // Reset state when leaving the textarea
+        editableContent.addEventListener('mouseleave', () => {
+            console.log('Mouse left textarea');
+            // Reset states to prevent stuck states
+            isContextMenuOpen = false;
+        });
+
         // Auto-save content while typing
         let saveTimeout: NodeJS.Timeout | null = null;
         editableContent.addEventListener('input', () => {
@@ -294,76 +305,7 @@ export class JournalView {
         });
     }
     
-    /**
-     * Handles an image drop operation
-     */
-    private async handleImageDrop(file: File, textarea: HTMLTextAreaElement, journalFolder: string): Promise<void> {
-        // Create a reader to read the image
-        const reader = new FileReader();
-        
-        // Handle reader load
-        reader.onload = async (event) => {
-            if (event.target && event.target.result) {
-                try {
-                    // Convert the file to an ArrayBuffer
-                    const buffer = await this.fileToArrayBuffer(file);
-                    
-                    // Create a file name for the image based on timestamp and original name
-                    const timestamp = Date.now();
-                    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '_');
-                    const imageName = `journal-img-${timestamp}-${sanitizedFileName}`;
-                    
-                    // Determine the folder path for the image
-                    let imageFolderPath = journalFolder ? `${journalFolder}/images` : 'images';
-                    
-                    // Ensure the images folder exists
-                    try {
-                        await this.plugin.app.vault.createFolder(imageFolderPath);
-                    } catch (error) {
-                        // Folder probably already exists, we can ignore this error
-                    }
-                    
-                    // Path for the new image file
-                    const imagePath = `${imageFolderPath}/${imageName}`;
-                    
-                    // Create the image file in the vault
-                    await this.plugin.app.vault.createBinary(imagePath, buffer);
-                    
-                    // Insert the markdown for the image at the cursor position
-                    const imageMarkdown = `![${file.name}](${imagePath})`;
-                    this.insertTextAtCursor(textarea, imageMarkdown);
-                    
-                    // Trigger an input event to ensure content is saved
-                    const inputEvent = new Event('input', { bubbles: true, cancelable: true });
-                    textarea.dispatchEvent(inputEvent);
-                    
-                    new Notice(`Image "${file.name}" added`);
-                } catch (error) {
-                    console.error('Error saving image:', error);
-                    new Notice(`Error saving image: ${error}`);
-                }
-            }
-        };
-        
-        // Start reading the file
-        reader.readAsDataURL(file);
-    }
-    
-    /**
-     * Converts a File to ArrayBuffer
-     */
-    private fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as ArrayBuffer);
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        });
-    }
-    
-    /**
-     * Inserts text at the cursor position in a textarea
-     */
+    // Inserts text at the cursor position in a textarea
     private insertTextAtCursor(textarea: HTMLTextAreaElement, text: string): void {
         const cursorPos = textarea.selectionStart;
         const textBefore = textarea.value.substring(0, cursorPos);
@@ -388,5 +330,85 @@ export class JournalView {
             new Notice(`Failed to save changes: ${error}`);
             console.error('Failed to save changes:', error);
         }
+    }
+
+    // Inserts a reference to a file into the current journal entry
+    insertFileReference(filePath: string): void {
+        needsRendering = true;
+        // Find all journal entries with an active editable content
+        const activeEditableContents = document.querySelectorAll('.editable-content.active-view');
+        
+        if (activeEditableContents.length === 0) {
+            new Notice('No active journal entry to insert file into');
+            return;
+        }
+    
+        // If multiple active contents, focus on the first one
+        const activeEditableContent = activeEditableContents[0] as HTMLTextAreaElement;
+    
+        // Determine the file reference based on the file type
+        const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+        if (!(file instanceof TFile)) {
+            new Notice('Invalid file');
+            return;
+        }
+    
+        let fileReference: string;
+        
+        // Handle different file types
+        if (this.isImageFile(file)) {
+            // For images, use markdown image syntax
+            fileReference = `![[${file.name}]]`;
+        } else if (this.isMarkdownFile(file)) {
+            // For markdown files, use wiki-link style
+            fileReference = `![[${file.name}]]`;
+        } else {
+            // For other files, use a generic link
+            fileReference = `![[${file.name}]]`;
+        }
+    
+        // Ensure the textarea is focused
+        activeEditableContent.focus();
+    
+        // Get the current cursor position
+        const cursorPos = activeEditableContent.selectionStart;
+        const textBefore = activeEditableContent.value.substring(0, cursorPos);
+        const textAfter = activeEditableContent.value.substring(activeEditableContent.selectionEnd);
+    
+        // Insert text with newlines
+        const newText = textBefore + '\n\n' + fileReference + '\n\n' + textAfter;
+        activeEditableContent.value = newText;
+    
+        // Set cursor position after the inserted text
+        const newCursorPos = cursorPos + fileReference.length + 4; // +4 for the newlines
+        activeEditableContent.setSelectionRange(newCursorPos, newCursorPos);
+    
+        // Trigger input event to ensure content is saved
+        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        activeEditableContent.dispatchEvent(inputEvent);
+    
+        // Optional: trigger change event
+        const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+        activeEditableContent.dispatchEvent(changeEvent);
+    
+        // Show a success notice
+        new Notice(`Inserted reference to ${file.name}`);
+    }
+    
+    /**
+     * Check if a file is an image
+     */
+    private isImageFile(file: TFile): boolean {
+        const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'];
+        const ext = file.extension.toLowerCase();
+        return imageExtensions.includes(ext);
+    }
+    
+    /**
+     * Check if a file is a markdown file
+     */
+    private isMarkdownFile(file: TFile): boolean {
+        const ext = file.extension.toLowerCase();
+        return ext === 'md' || ext === 'markdown';
     }
 }

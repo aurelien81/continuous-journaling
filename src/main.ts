@@ -1,4 +1,4 @@
-import { Plugin, Notice } from 'obsidian';
+import { App, Plugin, Notice, TFile } from 'obsidian';
 import { DEFAULT_SETTINGS, JournalingSettings, JournalingSettingTab } from './settings';
 import { JournalView } from './journal-view';
 import { getTodayDate } from './utils/date-utils';
@@ -45,6 +45,29 @@ export default class JournalingPlugin extends Plugin {
         
         // Register settings tab
         this.addSettingTab(new JournalingSettingTab(this.app, this));
+
+        this.registerEvent(
+            this.app.workspace.on('file-menu', (menu, file) => {
+                // Check if the file is a TFile (actual file)
+                if (file instanceof TFile) {
+                    menu.addItem((item) => {
+                        item
+                            .setTitle('Insert into Journal')
+                            .setIcon('text-cursor-input')
+                            .onClick(() => {
+                                // Find the active journal view if it exists
+                                const journalView = this.journalView;
+                                if (journalView) {
+                                    // Insert the file reference into the active editor
+                                    journalView.insertFileReference(file.path);
+                                } else {
+                                    new Notice('Open the journal view first to insert file reference');
+                                }
+                            });
+                    });
+                }
+            })
+        );
     }
 
     /**
@@ -75,6 +98,15 @@ export default class JournalingPlugin extends Plugin {
             new Notice('Failed to create or open today\'s journal');
             return;
         }
+    }
+
+    getActiveEditor(): HTMLTextAreaElement | null {
+        // Look for textareas with the active-view class within the journal view
+        const activeEditors = document.querySelectorAll('.journal-entry textarea.editable-content.active-view');
+        if (activeEditors.length > 0) {
+            return activeEditors[0] as HTMLTextAreaElement;
+        }
+        return null;
     }
     
     async loadSettings() {

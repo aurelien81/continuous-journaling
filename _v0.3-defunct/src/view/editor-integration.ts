@@ -66,7 +66,7 @@ export class EditorIntegration {
         containerEl.appendChild(editorEl);
         
         // Hide the original leaf
-        leaf.containerEl.style.display = 'none';
+        // leaf.containerEl.style.display = 'none';
         
         // Create a wrapper for the editor so we can style it properly
         const wrapper = containerEl.createDiv({ cls: 'editor-wrapper' });

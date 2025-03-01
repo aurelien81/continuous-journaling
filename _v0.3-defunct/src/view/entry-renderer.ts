@@ -218,8 +218,5 @@ export class EntryRenderer {
         if (this.editorCleanup) {
             this.editorCleanup();
         }
-        
-        // Remove event listeners
-        this.renderedContent.removeAllEventListeners();
     }
 }
