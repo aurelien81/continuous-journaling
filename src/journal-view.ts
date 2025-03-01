@@ -109,18 +109,24 @@ export class JournalView {
             cls: 'collapsible-content' + (this.plugin.settings.defaultExpandEntries ? ' content-expanded' : '')
         });
         
-        // Keep track of the current content value
+        // Track the current content
         let currentContent = content;
         
-        // Create the rendered view (markdown)
+        // Create the rendered content view
         const renderedContent = contentArea.createDiv({ 
             cls: 'rendered-content active-view' 
         });
         
-        // Create the editable view (textarea)
+        // Create the editable textarea
         const editableContent = contentArea.createEl('textarea', { 
             cls: 'editable-content',
             value: currentContent
+        });
+        
+        // Create save indicator
+        const saveIndicator = contentArea.createDiv({ 
+            cls: 'journal-save-indicator',
+            text: 'Saving...'
         });
         
         // Adjust textarea height to content
@@ -128,7 +134,10 @@ export class JournalView {
             editableContent.style.height = editableContent.scrollHeight + 'px';
         });
         
-        // Render the markdown content
+        // Flag to track if we're in a drag operation
+        let isDragging = false;
+        
+        // Function to render the markdown content
         const renderContent = () => {
             renderedContent.empty();
             MarkdownRenderer.render(this.plugin.app, currentContent, renderedContent, file.path, this.plugin);
@@ -139,14 +148,38 @@ export class JournalView {
         
         // Function to enter edit mode
         const enterEditMode = () => {
-            // Make sure the textarea has the current content before showing it
+            // Make sure textarea has current content
             editableContent.value = currentContent;
             
-            renderedContent.classList.toggle('active-view');
-            editableContent.classList.toggle('active-view');
+            // Hide rendered view, show editable view
+            renderedContent.classList.remove('active-view');
+            editableContent.classList.add('active-view');
+            
+            // Adjust textarea height
             editableContent.style.height = 'auto';
             editableContent.style.height = editableContent.scrollHeight + 'px';
             editableContent.focus();
+        };
+        
+        // Function to exit edit mode
+        const exitEditMode = async () => {
+            // If we're currently dragging, don't exit edit mode
+            if (isDragging) {
+                return;
+            }
+            
+            // Get current content from textarea
+            currentContent = editableContent.value;
+            
+            // Save changes
+            await this.saveContentToFile(file, currentContent);
+            
+            // Re-render content
+            renderContent();
+            
+            // Hide editable view, show rendered view
+            editableContent.classList.remove('active-view');
+            renderedContent.classList.add('active-view');
         };
         
         // Click on rendered content to edit
@@ -159,17 +192,66 @@ export class JournalView {
                 return;
             }
             
-            // Otherwise, trigger editing mode
+            // Enter edit mode
             enterEditMode();
         });
         
-        // Save changes and exit edit mode on blur
-        editableContent.addEventListener('blur', async () => {
-            currentContent = editableContent.value;
-            await this.saveContentToFile(file, currentContent);
-            renderContent();
-            renderedContent.classList.toggle('active-view');
-            editableContent.classList.toggle('active-view');
+        // Exit edit mode when textarea loses focus (but not during drag operations)
+        editableContent.addEventListener('blur', () => {
+            // Add a small delay to check if we're in a drag operation
+            setTimeout(() => {
+                exitEditMode();
+            }, 100);
+        });
+        
+        // Handle Escape key to exit edit mode
+        editableContent.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                editableContent.blur();
+            }
+        });
+        
+        // Drag events for handling image drops
+        editableContent.addEventListener('dragenter', (event) => {
+            isDragging = true;
+            event.preventDefault();
+            editableContent.classList.add('is-dragging-over');
+        });
+        
+        editableContent.addEventListener('dragover', (event) => {
+            event.preventDefault();
+        });
+        
+        editableContent.addEventListener('dragleave', () => {
+            editableContent.classList.remove('is-dragging-over');
+        });
+        
+        editableContent.addEventListener('drop', async (event) => {
+            event.preventDefault();
+            editableContent.classList.remove('is-dragging-over');
+            
+            // Handle file drops (images)
+            if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                try {
+                    // Process each dropped file
+                    for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                        const file = event.dataTransfer.files[i];
+                        
+                        // Check if it's an image
+                        if (file.type.startsWith('image/')) {
+                            await this.handleImageDrop(file, editableContent, this.plugin.settings.journalFolder);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error handling dropped files:', error);
+                    new Notice(`Error handling dropped files: ${error}`);
+                }
+            }
+            
+            // Reset dragging state
+            setTimeout(() => {
+                isDragging = false;
+            }, 200);
         });
         
         // Auto-adjust textarea height while typing
@@ -181,17 +263,27 @@ export class JournalView {
             currentContent = editableContent.value;
         });
         
-        // Save content periodically while typing
+        // Auto-save content while typing
         let saveTimeout: NodeJS.Timeout | null = null;
         editableContent.addEventListener('input', () => {
+            // Show 'Saving...' indicator
+            saveIndicator.classList.remove('saved');
+            saveIndicator.classList.add('saving');
+            saveIndicator.textContent = 'Saving...';
+            
             // Clear previous timeout
             if (saveTimeout) {
                 clearTimeout(saveTimeout);
             }
             
             // Set a new timeout to save after 500ms of inactivity
-            saveTimeout = setTimeout(() => {
-                this.saveContentToFile(file, currentContent);
+            saveTimeout = setTimeout(async () => {
+                await this.saveContentToFile(file, currentContent);
+                
+                // Update indicator to 'Saved'
+                saveIndicator.classList.remove('saving');
+                saveIndicator.classList.add('saved');
+                saveIndicator.textContent = 'Saved';
             }, 500);
         });
         
@@ -200,6 +292,90 @@ export class JournalView {
             toggleButton.classList.toggle('toggle-expanded');
             contentArea.classList.toggle('content-expanded');
         });
+    }
+    
+    /**
+     * Handles an image drop operation
+     */
+    private async handleImageDrop(file: File, textarea: HTMLTextAreaElement, journalFolder: string): Promise<void> {
+        // Create a reader to read the image
+        const reader = new FileReader();
+        
+        // Handle reader load
+        reader.onload = async (event) => {
+            if (event.target && event.target.result) {
+                try {
+                    // Convert the file to an ArrayBuffer
+                    const buffer = await this.fileToArrayBuffer(file);
+                    
+                    // Create a file name for the image based on timestamp and original name
+                    const timestamp = Date.now();
+                    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '_');
+                    const imageName = `journal-img-${timestamp}-${sanitizedFileName}`;
+                    
+                    // Determine the folder path for the image
+                    let imageFolderPath = journalFolder ? `${journalFolder}/images` : 'images';
+                    
+                    // Ensure the images folder exists
+                    try {
+                        await this.plugin.app.vault.createFolder(imageFolderPath);
+                    } catch (error) {
+                        // Folder probably already exists, we can ignore this error
+                    }
+                    
+                    // Path for the new image file
+                    const imagePath = `${imageFolderPath}/${imageName}`;
+                    
+                    // Create the image file in the vault
+                    await this.plugin.app.vault.createBinary(imagePath, buffer);
+                    
+                    // Insert the markdown for the image at the cursor position
+                    const imageMarkdown = `![${file.name}](${imagePath})`;
+                    this.insertTextAtCursor(textarea, imageMarkdown);
+                    
+                    // Trigger an input event to ensure content is saved
+                    const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+                    textarea.dispatchEvent(inputEvent);
+                    
+                    new Notice(`Image "${file.name}" added`);
+                } catch (error) {
+                    console.error('Error saving image:', error);
+                    new Notice(`Error saving image: ${error}`);
+                }
+            }
+        };
+        
+        // Start reading the file
+        reader.readAsDataURL(file);
+    }
+    
+    /**
+     * Converts a File to ArrayBuffer
+     */
+    private fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as ArrayBuffer);
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    }
+    
+    /**
+     * Inserts text at the cursor position in a textarea
+     */
+    private insertTextAtCursor(textarea: HTMLTextAreaElement, text: string): void {
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        const textAfter = textarea.value.substring(textarea.selectionEnd);
+        
+        // Insert text at cursor position with newlines for formatting
+        const newText = textBefore + '\n\n' + text + '\n\n' + textAfter;
+        textarea.value = newText;
+        
+        // Set cursor position after the inserted text
+        const newCursorPos = cursorPos + text.length + 4; // +4 for the newlines
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
     }
     
     /**

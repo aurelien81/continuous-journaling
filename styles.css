@@ -93,43 +93,47 @@
 
 /* Rendered markdown view */
 .rendered-content {
-    display: none;
+    display: none; /* Hide by default */
     width: 100%;
     min-height: 50px;
     padding: 10px 0;
 }
 
-/* Editable textarea - styled to match rendered content */
+.rendered-content.active-view {
+    display: block; /* Show when active */
+}
+
+/* Editable textarea */
 .editable-content {
-    display: none;
+    display: none; /* Hide by default */
     width: 100%;
     min-height: 50px;
     resize: none;
     border: none !important;
     outline: none !important;
-    background: transparent !important; /* Match background */
+    background-color: var(--background-primary) !important;
     color: var(--text-normal);
     font-family: var(--font-text);
     font-size: inherit;
     line-height: inherit;
-    padding: 10px 0;          /* Match the padding of rendered content */
-    margin: 0;                /* Reset margins */
-    box-shadow: none !important;  /* Remove any box shadow */
-    border-radius: 0;         /* Remove border radius */
-    transition: none;         /* Disable transitions */
-    overflow: hidden;         /* Hide scrollbars initially */
+    padding: 10px 0;
+    margin: 0;
+    box-shadow: none !important;
+    border-radius: 0;
+    transition: none;
+    overflow: hidden;
 }
 
 .editable-content:focus {
-    background: transparent !important;
+    background-color: var(--background-primary) !important;
     box-shadow: none !important;
     outline: none !important;
     border: none !important;
 }
 
-/* Subtle indicator for edit mode */
 .editable-content.active-view {
-    caret-color: var(--text-accent); /* Colorful cursor */
+    display: block; /* Show when active */
+    max-height: none; /* Remove any max-height limitation */
 }
 
 /* Active view (either rendered or editable) */
@@ -161,4 +165,83 @@
 .journal-entry .external-embed {
     width: 100% !important;
     max-height: 400px;
+}
+
+/* Templates setting */
+.template-setting textarea {
+    min-height: 120px;
+    font-family: var(--font-monospace);
+    resize: vertical;
+}
+
+/* Loading indicator for long-loading content */
+.journal-loading {
+    margin: 20px 0;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .journal-entry {
+        width: 95%;
+    }
+}
+
+/* Add a subtle indication that the rendered content is clickable */
+.rendered-content:hover {
+    cursor: text;
+    outline: 1px dashed var(--background-modifier-border);
+    outline-offset: 4px;
+    transition: outline 0.2s ease;
+}
+
+/* Save indicator */
+.journal-save-indicator {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.journal-save-indicator.saving {
+    opacity: 1;
+}
+
+.journal-save-indicator.saved {
+    opacity: 1;
+    animation: fadeOut 1.5s forwards;
+    animation-delay: 1s;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Add these styles to your existing CSS file */
+
+/* Drag and drop styling */
+.editable-content.is-dragging-over {
+    background-color: var(--background-modifier-hover) !important;
+    border: 2px dashed var(--interactive-accent) !important;
+    padding: 8px !important; /* Adjust padding to account for the border */
+}
+
+/* Image display in journal entries */
+.journal-entry img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+/* Make sure the textarea accepts drag and drop */
+.editable-content {
+    /* Add to existing styles */
+    cursor: text;
 }
