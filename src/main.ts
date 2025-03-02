@@ -25,7 +25,7 @@ export default class JournalingPlugin extends Plugin {
         );
         ribbonIconEl.addClass('journaling-ribbon-icon');
         
-        // Add command
+        // Add command to open journal view
         this.addCommand({
             id: 'open-journal-view',
             name: 'Open Journal View',
@@ -34,7 +34,7 @@ export default class JournalingPlugin extends Plugin {
             },
         });
         
-        // Add another command specifically for creating today's journal
+        // Add command for creating today's journal
         this.addCommand({
             id: 'create-todays-journal',
             name: 'Create/Open Today\'s Journal',
@@ -46,6 +46,7 @@ export default class JournalingPlugin extends Plugin {
         // Register settings tab
         this.addSettingTab(new JournalingSettingTab(this.app, this));
 
+        // Add context menu option for files to insert into journals
         this.registerEvent(
             this.app.workspace.on('file-menu', (menu, file) => {
                 // Check if the file is a TFile (actual file)
@@ -98,15 +99,6 @@ export default class JournalingPlugin extends Plugin {
             new Notice('Failed to create or open today\'s journal');
             return;
         }
-    }
-
-    getActiveEditor(): HTMLTextAreaElement | null {
-        // Look for textareas with the active-view class within the journal view
-        const activeEditors = document.querySelectorAll('.journal-entry textarea.editable-content.active-view');
-        if (activeEditors.length > 0) {
-            return activeEditors[0] as HTMLTextAreaElement;
-        }
-        return null;
     }
     
     async loadSettings() {

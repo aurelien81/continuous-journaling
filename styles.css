@@ -26,6 +26,7 @@
     margin: 10px 0;
     padding: 10px 0;
     border-top: var(--border-width) solid var(--background-modifier-border);
+    position: relative;
 }
 
 .journal-entry:first-child {
@@ -85,6 +86,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.2s ease-out;
+    position: relative;
 }
 
 .content-expanded {
@@ -141,6 +143,49 @@
     display: block;
 }
 
+/* Close Button for journal entries */
+.journal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.journal-close-button:hover {
+    opacity: 1;
+}
+
+/* Saving indicator */
+.journal-save-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    opacity: 0.8;
+    z-index: 5;
+}
+
+.journal-save-indicator.saving {
+    color: var(--text-muted);
+}
+
+.journal-save-indicator.saved {
+    color: var(--text-accent);
+}
+
 /* Hashtag styling */
 .cm-hashtag {
     cursor: pointer;
@@ -167,24 +212,17 @@
     max-height: 400px;
 }
 
-/* Templates setting */
-.template-setting textarea {
-    min-height: 120px;
-    font-family: var(--font-monospace);
-    resize: vertical;
-}
-
-/* Loading indicator for long-loading content */
-.journal-loading {
-    margin: 20px 0;
-    text-align: center;
-    color: var(--text-muted);
-}
-
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
     .journal-entry {
         width: 95%;
+    }
+    
+    .journal-close-button {
+        top: 5px;
+        right: 5px;
+        padding: 3px 8px;
+        font-size: 0.7em;
     }
 }
 
@@ -196,32 +234,6 @@
     transition: outline 0.2s ease;
 }
 
-/* Save indicator */
-.journal-save-indicator {
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    font-size: 0.8em;
-    color: var(--text-muted);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.journal-save-indicator.saving {
-    opacity: 1;
-}
-
-.journal-save-indicator.saved {
-    opacity: 1;
-    animation: fadeOut 1.5s forwards;
-    animation-delay: 1s;
-}
-
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
 /* Image display in journal entries */
 .journal-entry img {
     max-width: 100%;
@@ -230,4 +242,3 @@
     margin: 10px 0;
     border-radius: 4px;
 }
-

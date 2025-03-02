@@ -3,20 +3,16 @@ import JournalingPlugin from './main';
 import { formatDateForDisplay } from './utils/date-utils';
 import { getJournalFiles, sortJournalFiles } from './utils/file-utils';
 
-let clickType: 'left' | 'right' | null = null;
-let needsRendering = false;
-let isContextMenuOpen = false;
-
 export class JournalView {
     plugin: JournalingPlugin;
+    activeEditor: HTMLTextAreaElement | null = null;
     
     constructor(plugin: JournalingPlugin) {
         this.plugin = plugin;
+        this.registerCleanup();
     }
     
-    /**
-     * Opens the continuous journal view in a new leaf
-     */
+    // Opens the continuous journal view in a new leaf
     async open(): Promise<void> {
         // Create a new leaf (opens a new tab)
         const leaf = this.plugin.app.workspace.getLeaf(true);
@@ -61,9 +57,7 @@ export class JournalView {
         }
     }
     
-    /**
-     * Adds an error message to the panel when file reading fails
-     */
+    // Adds an error message to the panel when file reading fails
     private addErrorMessage(panel: HTMLElement, filename: string, error: any): void {
         const errorDiv = panel.createDiv({ cls: 'journal-entry journal-error' });
         
@@ -77,9 +71,7 @@ export class JournalView {
         errorContent.textContent = `Failed to load journal: ${error.message || error}`;
     }
     
-    /**
-     * Adds a journal entry to the panel
-     */
+    // Adds a journal entry to the panel
     private addJournalEntry(panel: HTMLElement, file: TFile, content: string): void {
         const journalDate = file.basename;
         
@@ -130,11 +122,19 @@ export class JournalView {
             value: currentContent
         });
         
+        // Create close button (new requirement)
+        const closeButton = contentArea.createEl('button', {
+            cls: 'journal-close-button',
+            text: 'Close'
+        });
+        closeButton.style.display = 'none'; // Hide initially
+        
         // Create save indicator
         const saveIndicator = contentArea.createDiv({ 
             cls: 'journal-save-indicator',
-            text: 'Saving...'
+            text: 'Saved'
         });
+        saveIndicator.style.display = 'none'; // Hide initially
         
         // Adjust textarea height to content
         window.requestAnimationFrame(() => {
@@ -154,13 +154,15 @@ export class JournalView {
         const enterEditMode = () => {
             // Set editing flag
             isEditing = true;
+            this.activeEditor = editableContent;
             
             // Make sure textarea has current content
             editableContent.value = currentContent;
             
-            // Hide rendered view, show editable view
+            // Hide rendered view, show editable view and close button
             renderedContent.classList.remove('active-view');
             editableContent.classList.add('active-view');
+            closeButton.style.display = 'block';
             
             // Adjust textarea height
             editableContent.style.height = 'auto';
@@ -170,28 +172,33 @@ export class JournalView {
         
         // Function to exit edit mode
         const exitEditMode = async () => {
-            // Clear the editing flag
-            isEditing = false;
-            
-            // Get current content from textarea
-            currentContent = editableContent.value;
-            
-            // Save changes
-            await this.saveContentToFile(file, currentContent);
-            
-            // Re-render content
-            renderContent();
-            
-            // Hide editable view, show rendered view
-            editableContent.classList.remove('active-view');
-            renderedContent.classList.add('active-view');
+            // Ensure content is saved before exiting
+            if (isEditing) {
+                // Get current content from textarea
+                currentContent = editableContent.value;
+                
+                // Save changes
+                await this.saveContentToFile(file, currentContent);
+                
+                // Re-render content
+                renderContent();
+                
+                // Hide editable view and close button, show rendered view
+                editableContent.classList.remove('active-view');
+                closeButton.style.display = 'none';
+                renderedContent.classList.add('active-view');
+                
+                // Clear editing flag and active editor reference
+                isEditing = false;
+                if (this.activeEditor === editableContent) {
+                    this.activeEditor = null;
+                }
+            }
         };
 
+        // Click on rendered content to edit
         renderedContent.addEventListener('click', (event) => {
             const target = event.target as HTMLElement;
-            
-            // Determine if this is a right-click
-            const isRightClick = event.button === 2;
             
             // Don't enter edit mode if clicking on links or hashtags
             if (target.tagName === 'A' || target.closest('a') || 
@@ -199,10 +206,12 @@ export class JournalView {
                 return;
             }
             
-            // Enter edit mode if not a right-click
-            if (!isRightClick) {
-                enterEditMode();
-            }
+            enterEditMode();
+        });
+        
+        // Close button to exit edit mode
+        closeButton.addEventListener('click', () => {
+            exitEditMode();
         });
         
         // Manual save/exit when pressing Escape
@@ -221,63 +230,11 @@ export class JournalView {
             currentContent = editableContent.value;
         });
 
-        // Track click type on mousedown
-        editableContent.addEventListener('mousedown', (event) => {
-            switch (event.button) {
-                case 0: // Left click
-                    clickType = 'left';
-                    break;
-                case 2: // Right click
-                    clickType = 'right';
-                    break;
-            }
-        });
-
-        // Track left-click for potential rendering need
-        editableContent.addEventListener('click', (event) => {
-            // If clicked outside of textarea, mark for rendering
-            if (event.target !== editableContent) {
-                needsRendering = true;
-            }
-        });
-
-        // Handle context menu to prevent default right-click behavior
-        editableContent.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-        });
-
-        // Handle blur event
-        editableContent.addEventListener('blur', (event) => {
-            setTimeout(() => {
-                // Render if:
-                // 1. Needs rendering is true, or
-                // 2. It was a left click outside the textarea
-                if (needsRendering || (clickType === 'left' && !event.relatedTarget)) {
-                    renderContent();
-                    needsRendering = false;
-                }
-
-                // Exit edit mode if it was a left click
-                if (clickType === 'left' && !event.relatedTarget) {
-                    exitEditMode();
-                }
-
-                // Reset states
-                clickType = null;
-            }, 100);
-        });
-
-        // Reset state when leaving the textarea
-        editableContent.addEventListener('mouseleave', () => {
-            console.log('Mouse left textarea');
-            // Reset states to prevent stuck states
-            isContextMenuOpen = false;
-        });
-
         // Auto-save content while typing
         let saveTimeout: NodeJS.Timeout | null = null;
         editableContent.addEventListener('input', () => {
             // Show 'Saving...' indicator
+            saveIndicator.style.display = 'block';
             saveIndicator.classList.remove('saved');
             saveIndicator.classList.add('saving');
             saveIndicator.textContent = 'Saving...';
@@ -295,6 +252,13 @@ export class JournalView {
                 saveIndicator.classList.remove('saving');
                 saveIndicator.classList.add('saved');
                 saveIndicator.textContent = 'Saved';
+                
+                // Hide the indicator after a delay
+                setTimeout(() => {
+                    if (saveIndicator.classList.contains('saved')) {
+                        saveIndicator.style.display = 'none';
+                    }
+                }, 2000);
             }, 500);
         });
         
@@ -303,21 +267,6 @@ export class JournalView {
             toggleButton.classList.toggle('toggle-expanded');
             contentArea.classList.toggle('content-expanded');
         });
-    }
-    
-    // Inserts text at the cursor position in a textarea
-    private insertTextAtCursor(textarea: HTMLTextAreaElement, text: string): void {
-        const cursorPos = textarea.selectionStart;
-        const textBefore = textarea.value.substring(0, cursorPos);
-        const textAfter = textarea.value.substring(textarea.selectionEnd);
-        
-        // Insert text at cursor position with newlines for formatting
-        const newText = textBefore + '\n\n' + text + '\n\n' + textAfter;
-        textarea.value = newText;
-        
-        // Set cursor position after the inserted text
-        const newCursorPos = cursorPos + text.length + 4; // +4 for the newlines
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
     }
     
     /**
@@ -332,66 +281,55 @@ export class JournalView {
         }
     }
 
-    // Inserts a reference to a file into the current journal entry
+    /**
+     * Inserts a reference to a file into the active journal entry
+     */
     insertFileReference(filePath: string): void {
-        needsRendering = true;
-        // Find all journal entries with an active editable content
-        const activeEditableContents = document.querySelectorAll('.editable-content.active-view');
-        
-        if (activeEditableContents.length === 0) {
+        // Find the active editor
+        if (!this.activeEditor) {
             new Notice('No active journal entry to insert file into');
             return;
         }
     
-        // If multiple active contents, focus on the first one
-        const activeEditableContent = activeEditableContents[0] as HTMLTextAreaElement;
-    
-        // Determine the file reference based on the file type
+        // Get the file
         const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
         if (!(file instanceof TFile)) {
             new Notice('Invalid file');
             return;
         }
     
+        // Create the appropriate file reference
         let fileReference: string;
         
         // Handle different file types
         if (this.isImageFile(file)) {
-            // For images, use markdown image syntax
             fileReference = `![[${file.name}]]`;
         } else if (this.isMarkdownFile(file)) {
-            // For markdown files, use wiki-link style
             fileReference = `![[${file.name}]]`;
         } else {
-            // For other files, use a generic link
             fileReference = `![[${file.name}]]`;
         }
     
-        // Ensure the textarea is focused
-        activeEditableContent.focus();
+        // Focus the active editor
+        this.activeEditor.focus();
     
-        // Get the current cursor position
-        const cursorPos = activeEditableContent.selectionStart;
-        const textBefore = activeEditableContent.value.substring(0, cursorPos);
-        const textAfter = activeEditableContent.value.substring(activeEditableContent.selectionEnd);
+        // Get cursor position
+        const cursorPos = this.activeEditor.selectionStart;
+        const textBefore = this.activeEditor.value.substring(0, cursorPos);
+        const textAfter = this.activeEditor.value.substring(this.activeEditor.selectionEnd);
     
         // Insert text with newlines
         const newText = textBefore + '\n\n' + fileReference + '\n\n' + textAfter;
-        activeEditableContent.value = newText;
+        this.activeEditor.value = newText;
     
         // Set cursor position after the inserted text
         const newCursorPos = cursorPos + fileReference.length + 4; // +4 for the newlines
-        activeEditableContent.setSelectionRange(newCursorPos, newCursorPos);
+        this.activeEditor.setSelectionRange(newCursorPos, newCursorPos);
     
         // Trigger input event to ensure content is saved
         const inputEvent = new Event('input', { bubbles: true, cancelable: true });
-        activeEditableContent.dispatchEvent(inputEvent);
+        this.activeEditor.dispatchEvent(inputEvent);
     
-        // Optional: trigger change event
-        const changeEvent = new Event('change', { bubbles: true, cancelable: true });
-        activeEditableContent.dispatchEvent(changeEvent);
-    
-        // Show a success notice
         new Notice(`Inserted reference to ${file.name}`);
     }
     
@@ -410,5 +348,26 @@ export class JournalView {
     private isMarkdownFile(file: TFile): boolean {
         const ext = file.extension.toLowerCase();
         return ext === 'md' || ext === 'markdown';
+    }
+
+    private registerCleanup(): void {
+        // Watch for workspace layout changes (which happen when changing pages/tabs)
+        this.plugin.registerEvent(
+            this.plugin.app.workspace.on('layout-change', () => {
+                // Check if we have an active editor
+                if (this.activeEditor) {
+                    // Find the journal entry containing this editor
+                    const journalEntry = this.activeEditor.closest('.journal-entry');
+                    if (journalEntry) {
+                        // Trigger the exit edit mode function for this entry
+                        const event = new KeyboardEvent('keydown', { key: 'Escape' });
+                        this.activeEditor.dispatchEvent(event);
+                    }
+                    
+                    // Clear the active editor reference
+                    this.activeEditor = null;
+                }
+            })
+        );
     }
 }
