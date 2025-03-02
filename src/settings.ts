@@ -96,5 +96,17 @@ export class JournalingSettingTab extends PluginSettingTab {
                 .onClick(async () => {
                     await this.plugin.migrateJournalEntries();
         }));
+
+
+        new Setting(containerEl)
+        .setName('Delete Empty Journal Entries')
+        .setDesc('Delete all EMPTY journal entries. This action cannot be undone.')
+        .addButton(button => button
+            .setButtonText('Delete Empty Entries')
+            .setCta() // Make it a call-to-action button
+            .setClass('journal-delete-button')
+            .onClick(async () => {
+                await this.plugin.deleteEmptyJournalEntries();
+            }));
     }
 }

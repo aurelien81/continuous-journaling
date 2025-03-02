@@ -291,3 +291,13 @@
     background-color: var(--background-secondary);
     border-radius: 5px;
 }
+
+/* Style for the delete button in settings */
+.journal-delete-button {
+    background-color: #e53935 !important; /* Red color */
+    color: white !important;
+}
+
+.journal-delete-button:hover {
+    background-color: #c62828 !important; /* Darker red on hover */
+}

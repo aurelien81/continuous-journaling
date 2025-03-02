@@ -1,7 +1,21 @@
-import { MarkdownRenderer, Notice, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownRenderer, Notice, TFile, WorkspaceLeaf, App } from 'obsidian';
 import JournalingPlugin from './main';
 import { formatDateForDisplay } from './utils/date-utils';
 import { getJournalFiles, sortJournalFiles } from './utils/file-utils';
+
+// Define an interface to extend the Obsidian App type with the missing properties
+interface ExtendedApp extends App {
+    internalPlugins: {
+        getPluginById(id: string): {
+            instance: {
+                openGlobalSearch(query: string): void;
+            };
+        } | undefined;
+    };
+    commands: {
+        executeCommandById(id: string): boolean;
+    };
+}
 
 export class JournalView {
     plugin: JournalingPlugin;
@@ -393,12 +407,12 @@ export class JournalView {
         const textBefore = this.activeEditor.value.substring(0, cursorPos);
         const textAfter = this.activeEditor.value.substring(this.activeEditor.selectionEnd);
     
-        // Insert text with newlines
-        const newText = textBefore + '\n\n' + fileReference + '\n\n' + textAfter;
+        // Insert text without newlines
+        const newText = textBefore + fileReference + textAfter;
         this.activeEditor.value = newText;
     
         // Set cursor position after the inserted text
-        const newCursorPos = cursorPos + fileReference.length + 4; // +4 for the newlines
+        const newCursorPos = cursorPos + fileReference.length; // Position after the reference
         this.activeEditor.setSelectionRange(newCursorPos, newCursorPos);
     
         // Trigger input event to ensure content is saved
@@ -453,7 +467,7 @@ export class JournalView {
         hashtags.forEach(tag => {
             if (tag instanceof HTMLElement) {
                 // Replace the tag to remove any existing listeners
-                const newTag = tag.cloneNode(true);
+                const newTag = tag.cloneNode(true) as HTMLElement;
                 tag.parentNode?.replaceChild(newTag, tag);
                 
                 newTag.addEventListener('click', (e) => {
@@ -474,13 +488,14 @@ export class JournalView {
         
         try {
             // Method 1: Direct API call
-            if (this.plugin.app.internalPlugins.getPluginById('global-search')?.instance.openGlobalSearch) {
-                this.plugin.app.internalPlugins.getPluginById('global-search')?.instance.openGlobalSearch(searchTerm);
+            const app = this.plugin.app as ExtendedApp;
+            if (app.internalPlugins?.getPluginById('global-search')?.instance.openGlobalSearch) {
+                app.internalPlugins.getPluginById('global-search')?.instance.openGlobalSearch(searchTerm);
                 return;
             }
             
             // Method 2: Execute search command
-            if (this.plugin.app.commands.executeCommandById('global-search:open')) {
+            if (app.commands?.executeCommandById('global-search:open')) {
                 setTimeout(() => {
                     const searchInput = document.querySelector('.search-input-container input');
                     if (searchInput instanceof HTMLInputElement) {

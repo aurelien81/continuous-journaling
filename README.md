@@ -19,6 +19,7 @@ The 'Daily Notes' core plugin is not necessary for this plugin to function.
 - **Automatic Creation**: Automatically creates today's journal entry when needed
 - **Collapsible Entries**: Easily collapse and expand entries for better navigation
 - **Customizable Settings**: Configure folder location, date format, and display preferences
+- **Empty Entry Management**: Easily delete all empty journal entries to keep your vault clean
 
 ## How to Use
 
@@ -160,3 +161,19 @@ The main view of the plugin displays all your journal entries in a continuous, s
 
 
 
+### Delete Empty Journal Entries
+
+The plugin provides a feature to automatically delete all empty journal entries:
+
+1. Go to the plugin settings
+2. Find the "Delete Empty Journal Entries" section
+3. Click the "Delete Empty Entries" button
+4. Confirm that you want to proceed with the deletion
+
+This feature will scan all journal entries and delete any that contain no content (completely empty or containing only whitespace). This operation cannot be undone, so use it with caution.
+
+#### Why is this useful?
+
+- Cleanup your journal vault by removing entries that were created but never used
+- Remove auto-generated daily entries that you didn't end up writing in
+- Keep your journal focused only on days where you actually wrote something
