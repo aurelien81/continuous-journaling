@@ -72,6 +72,10 @@ export class JournalView {
         const start = this.currentBatch * this.batchSize;
         const end = Math.min(start + this.batchSize, this.allFiles.length);
         
+        // Remove ALL "Load More" buttons to ensure there aren't duplicates
+        panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
+        this.loadMoreButton = null;
+        
         // Get the files for this batch
         const filesToLoad = this.allFiles.slice(start, end);
         
@@ -88,40 +92,40 @@ export class JournalView {
         
         // Increment the batch counter
         this.currentBatch++;
+        
+        // Make sure we've removed all load more buttons again (just to be safe)
+        panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
+        
+        // Add the "Load More" button at the end if there are more entries to load
+        if (this.currentBatch * this.batchSize < this.allFiles.length) {
+            this.addLoadMoreButton(panel);
+        }
     }
-    
+
     // Add a "Load More" button
     private addLoadMoreButton(panel: HTMLElement): void {
-        // Remove existing button if present
-        if (this.loadMoreButton) {
-            this.loadMoreButton.remove();
-        }
+        // Make sure any existing button is removed first
+        panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
         
-        // Create new button
+        // Create the button
         this.loadMoreButton = panel.createEl('button', {
             cls: 'journal-load-more-button',
             text: 'Load More Entries'
         });
         
-        // Since we just created the button, we know it's not null now
-        const button = this.loadMoreButton; // Create a non-null reference
+        // Make sure the button is at the end of the panel
+        panel.appendChild(this.loadMoreButton);
         
-        button.addEventListener('click', async () => {
+        // Add click event
+        this.loadMoreButton.addEventListener('click', async () => {
             // Show loading state
-            button.textContent = 'Loading...';
-            button.setAttr('disabled', 'true');
+            if (this.loadMoreButton) {
+                this.loadMoreButton.textContent = 'Loading...';
+                this.loadMoreButton.setAttr('disabled', 'true');
+            }
             
             // Load the next batch
             await this.loadBatch(panel);
-            
-            // Update or remove the button
-            if (this.currentBatch * this.batchSize < this.allFiles.length) {
-                button.textContent = 'Load More Entries';
-                button.removeAttribute('disabled');
-            } else {
-                button.remove();
-                this.loadMoreButton = null;
-            }
         });
     }
     
@@ -213,6 +217,9 @@ export class JournalView {
         const renderContent = () => {
             renderedContent.empty();
             MarkdownRenderer.render(this.plugin.app, currentContent, renderedContent, file.path, this.plugin);
+
+            // Make hashtags clickable
+            this.makeHashtagsClickable(renderedContent);
         };
         
         // Initial render
@@ -437,5 +444,73 @@ export class JournalView {
                 }
             })
         );
+    }
+
+    makeHashtagsClickable(contentEl: HTMLElement): void {
+        // Find all hashtag elements
+        const hashtags = contentEl.querySelectorAll('.cm-hashtag, .tag');
+        
+        hashtags.forEach(tag => {
+            if (tag instanceof HTMLElement) {
+                // Replace the tag to remove any existing listeners
+                const newTag = tag.cloneNode(true);
+                tag.parentNode?.replaceChild(newTag, tag);
+                
+                newTag.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const hashtagText = newTag.textContent?.trim() || '';
+                    this.openSearchWithHashtag(hashtagText);
+                });
+                
+                newTag.style.cursor = 'pointer';
+            }
+        });
+    }
+
+    openSearchWithHashtag(hashtag: string): void {
+        const searchTerm = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
+        
+        try {
+            // Method 1: Direct API call
+            if (this.plugin.app.internalPlugins.getPluginById('global-search')?.instance.openGlobalSearch) {
+                this.plugin.app.internalPlugins.getPluginById('global-search')?.instance.openGlobalSearch(searchTerm);
+                return;
+            }
+            
+            // Method 2: Execute search command
+            if (this.plugin.app.commands.executeCommandById('global-search:open')) {
+                setTimeout(() => {
+                    const searchInput = document.querySelector('.search-input-container input');
+                    if (searchInput instanceof HTMLInputElement) {
+                        searchInput.value = searchTerm;
+                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }, 100);
+                return;
+            }
+            
+            // Method 3: Focus existing search leaf
+            const searchLeaf = this.plugin.app.workspace.getLeavesOfType('search')[0];
+            if (searchLeaf) {
+                this.plugin.app.workspace.setActiveLeaf(searchLeaf, { focus: true });
+                setTimeout(() => {
+                    const searchInput = document.querySelector('.search-input-container input');
+                    if (searchInput instanceof HTMLInputElement) {
+                        searchInput.value = searchTerm;
+                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }, 100);
+                return;
+            }
+            
+            // Fallback
+            new Notice(`Search for: ${searchTerm}`);
+            
+        } catch (error) {
+            console.error('Error opening search:', error);
+            new Notice(`Could not open search. Please search for: ${searchTerm}`);
+        }
     }
 }

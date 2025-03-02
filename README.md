@@ -157,3 +157,6 @@ The main view of the plugin displays all your journal entries in a continuous, s
 - **Responsive Design**: The interface adjusts to different screen sizes.
 - **Visual Indicators**: Clear visual feedback for saving operations and editing mode.
 - **Error Handling**: User-friendly error notices when operations fail.
+
+
+
