@@ -3,5 +3,5 @@
   "dateFormat": "YYYY-MM-DD",
   "sortDirection": "newest-first",
   "defaultExpandEntries": true,
-  "sideBySideEditing": true
+  "folderFormat": "YYYY/MM"
 }

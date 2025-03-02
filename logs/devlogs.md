@@ -1,4 +1,11 @@
+# March 2nd, 2025
+
+* added migration support for all existing files already inside the vault
+* added folder structure with YYYY and YYYY/MM to organize the journal entries
+* added limited number of journals loaded (10) with button to load more
+* added 'close' button to exit editing mode
+* removed the automatic rendering when clicking
 
 # March 1st, 2025
 
-* add ability to insert a file by write clicking on the file and using 'insert into journal' (but this needs to be fixed because the rendering has issue when clicking outside of the textarea)
+* add ability to insert a file by write clicking on the file and using 'insert into journal'

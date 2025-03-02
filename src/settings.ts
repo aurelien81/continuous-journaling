@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, Modal } from 'obsidian';
 import JournalingPlugin from './main';
 
 export interface JournalingSettings {
@@ -6,6 +6,7 @@ export interface JournalingSettings {
     dateFormat: string;
     sortDirection: 'newest-first' | 'oldest-first';
     defaultExpandEntries: boolean;
+    folderFormat: string;
 }
 
 export const DEFAULT_SETTINGS: JournalingSettings = {
@@ -13,6 +14,7 @@ export const DEFAULT_SETTINGS: JournalingSettings = {
     dateFormat: 'YYYY-MM-DD',
     sortDirection: 'newest-first',
     defaultExpandEntries: true,
+    folderFormat: '',
 };
 
 export class JournalingSettingTab extends PluginSettingTab {
@@ -73,5 +75,26 @@ export class JournalingSettingTab extends PluginSettingTab {
                     this.plugin.settings.defaultExpandEntries = value;
                     await this.plugin.saveSettings();
                 }));
+
+        new Setting(containerEl)
+            .setName('Folder Structure Format')
+            .setDesc('Format pattern for organizing journal entries in subfolders. Examples: empty for flat structure, "YYYY" for yearly folders, "YYYY/MM" for monthly folders.')
+            .addText(text => text
+                .setPlaceholder('YYYY/MM')
+                .setValue(this.plugin.settings.folderFormat)
+                .onChange(async (value) => {
+                    this.plugin.settings.folderFormat = value;
+                    await this.plugin.saveSettings();
+        }));
+
+        new Setting(containerEl)
+            .setName('Migrate Journal Entries')
+            .setDesc('Move existing journal entries to the folder structure defined by the folder format pattern.')
+            .addButton(button => button
+                .setButtonText('Migrate Entries')
+                .setCta() // Make it a call-to-action button
+                .onClick(async () => {
+                    await this.plugin.migrateJournalEntries();
+        }));
     }
 }

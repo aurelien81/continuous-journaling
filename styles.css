@@ -90,7 +90,7 @@
 }
 
 .content-expanded {
-    max-height: 100vh; /* This will be overridden by JS for actual content height */
+    max-height: 100vh;
 }
 
 /* Rendered markdown view */
@@ -241,4 +241,51 @@
     display: block;
     margin: 10px 0;
     border-radius: 4px;
+}
+
+/* Load More button styling */
+.journal-load-more-button {
+    display: block;
+    margin: 20px auto;
+    padding: 8px 16px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.journal-load-more-button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+.journal-load-more-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* Empty state styling */
+.journal-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Migrtion modal styling */
+.migration-progress {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.migration-status {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
 }

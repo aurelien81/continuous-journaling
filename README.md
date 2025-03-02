@@ -1,6 +1,15 @@
 # Continuous Journaling for Obsidian
 
-A plugin for Obsidian that displays journal entries in one Logseq-like continuous page.
+A plugin for obsidian that displays the journals in one Logseq-like continuous page.
+
+After installing this plugin, a new item is added to the obsidian ribbon. Clicking on this item creates a new tab that displays all the daily notes into one scrollable page. The notes are editable individually, and those edits are reflected in the original notes.
+
+Each time the journals tab is triggered, a new daily note for the day is create if that daily note doesn't already exist.
+
+The 'Daily Notes' core plugin is not necessary for this plugin to function.
+
+![Dark Mode](./resources/screenshots/pluginPresentation-darkv2.png)
+![Light Mode](./resources/screenshots/pluginPresentation-lightv2.png)
 
 ## Features
 
@@ -67,3 +76,84 @@ Developed by Aurélien Lainé
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Continuous Journaling for Obsidian - Functions Guide
+
+## Core Features
+
+### Journal View
+The main view of the plugin displays all your journal entries in a continuous, scrollable page. Each entry is collapsible and editable directly from this view.
+
+### Creating and Managing Entries
+
+#### Automatic Creation
+- **Today's Entry**: The plugin automatically creates today's journal entry when you open the journal view.
+- **Entry Organization**: All entries are stored in your designated journal folder (default: "journals").
+
+#### Navigation and Organization
+- **Date Format**: Entries follow the YYYY-MM-DD format by default, which ensures proper chronological sorting.
+- **Sorting Options**: View entries in either newest-first or oldest-first order.
+- **Collapsible Entries**: Each entry can be expanded or collapsed to focus on specific days.
+
+### Editing Capabilities
+
+#### In-place Editing
+- **Direct Editing**: Click on any entry's content to edit it directly within the continuous view.
+- **Autosaving**: Changes are automatically saved after you stop typing (with a brief delay).
+- **Visual Feedback**: A "Saving..." indicator appears while changes are being saved.
+- **Close Button**: Press the "Close" button or hit Escape to exit editing mode.
+- **Auto-resize**: The text area automatically adjusts its height as you type.
+
+#### Formatting and Markdown
+- **Markdown Support**: Full support for Obsidian's markdown syntax within the editor.
+- **Link Handling**: Links and hashtags in the entries remain clickable and functional.
+
+### Integration Features
+
+#### File References
+- **Insert References**: Right-click any file in Obsidian and select "Insert into Journal" to add a reference to that file in your active journal entry.
+- **Image Embedding**: Insert image files as embedded content in your journal entries.
+- **Note Linking**: Link to other notes within your journal entries using standard Obsidian syntax.
+
+#### Navigation
+- **Entry Links**: Click on an entry's title to open that journal entry in a separate tab.
+- **Original File Access**: Each entry links to its original file for easy navigation.
+
+## Settings and Customization
+
+### Configuration Options
+- **Journal Folder**: Specify the folder where journal entries are stored (default: "journals").
+- **Date Format**: Choose the format for journal filenames (default: YYYY-MM-DD).
+- **Sort Direction**: Display newest entries first or oldest entries first.
+- **Default Expand Entries**: Choose whether entries should be expanded by default.
+
+### Commands
+- **Open Journal View**: Open the continuous scrollable view of all journal entries.
+- **Create/Open Today's Journal**: Quickly create or access today's journal entry.
+
+## Technical Features
+
+### File Operations
+- **Folder Creation**: Automatically creates the journal folder if it doesn't exist.
+- **Date Detection**: Intelligently identifies journal entries based on their filename format.
+- **File Handling**: Proper error handling for file operations (reading, writing, creation).
+
+### User Interface
+- **Responsive Design**: The interface adjusts to different screen sizes.
+- **Visual Indicators**: Clear visual feedback for saving operations and editing mode.
+- **Error Handling**: User-friendly error notices when operations fail.

@@ -7,6 +7,12 @@ export class JournalView {
     plugin: JournalingPlugin;
     activeEditor: HTMLTextAreaElement | null = null;
     
+    // Simple lazy loading properties
+    private allFiles: TFile[] = [];
+    private batchSize: number = 10;
+    private currentBatch: number = 0;
+    private loadMoreButton: HTMLElement | null = null;
+    
     constructor(plugin: JournalingPlugin) {
         this.plugin = plugin;
         this.registerCleanup();
@@ -30,8 +36,12 @@ export class JournalView {
         // Create a scrollable panel for journal entries
         const panel = contentEl.createDiv({ cls: 'custom-journal-panel' });
         
-        // Get all journal files
-        const journalFiles = getJournalFiles(this.plugin.app, this.plugin.settings.journalFolder);
+        // Get all journal files, passing the folder format
+        const journalFiles = getJournalFiles(
+            this.plugin.app, 
+            this.plugin.settings.journalFolder,
+            this.plugin.settings.folderFormat
+        );
         
         if (journalFiles.length === 0) {
             new Notice('No journal entries found.');
@@ -43,10 +53,30 @@ export class JournalView {
         }
         
         // Sort the files according to user preference
-        const sortedFiles = sortJournalFiles(journalFiles, this.plugin.settings.sortDirection);
+        this.allFiles = sortJournalFiles(journalFiles, this.plugin.settings.sortDirection);
         
-        // Add each file to the panel
-        for (const file of sortedFiles) {
+        // Reset batch counter
+        this.currentBatch = 0;
+        
+        // Load the first batch of entries
+        await this.loadBatch(panel);
+        
+        // Add "Load More" button if there are more entries
+        if (this.currentBatch * this.batchSize < this.allFiles.length) {
+            this.addLoadMoreButton(panel);
+        }
+    }
+    
+    // Load a batch of entries
+    private async loadBatch(panel: HTMLElement): Promise<void> {
+        const start = this.currentBatch * this.batchSize;
+        const end = Math.min(start + this.batchSize, this.allFiles.length);
+        
+        // Get the files for this batch
+        const filesToLoad = this.allFiles.slice(start, end);
+        
+        // Load each file and add it to the panel
+        for (const file of filesToLoad) {
             try {
                 const fileContent = await this.plugin.app.vault.read(file);
                 this.addJournalEntry(panel, file, fileContent);
@@ -55,6 +85,44 @@ export class JournalView {
                 this.addErrorMessage(panel, file.basename, error);
             }
         }
+        
+        // Increment the batch counter
+        this.currentBatch++;
+    }
+    
+    // Add a "Load More" button
+    private addLoadMoreButton(panel: HTMLElement): void {
+        // Remove existing button if present
+        if (this.loadMoreButton) {
+            this.loadMoreButton.remove();
+        }
+        
+        // Create new button
+        this.loadMoreButton = panel.createEl('button', {
+            cls: 'journal-load-more-button',
+            text: 'Load More Entries'
+        });
+        
+        // Since we just created the button, we know it's not null now
+        const button = this.loadMoreButton; // Create a non-null reference
+        
+        button.addEventListener('click', async () => {
+            // Show loading state
+            button.textContent = 'Loading...';
+            button.setAttr('disabled', 'true');
+            
+            // Load the next batch
+            await this.loadBatch(panel);
+            
+            // Update or remove the button
+            if (this.currentBatch * this.batchSize < this.allFiles.length) {
+                button.textContent = 'Load More Entries';
+                button.removeAttribute('disabled');
+            } else {
+                button.remove();
+                this.loadMoreButton = null;
+            }
+        });
     }
     
     // Adds an error message to the panel when file reading fails

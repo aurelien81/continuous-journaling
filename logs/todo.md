@@ -1,3 +1,8 @@
+
+- [ ] years/months organization of notes
+- [ ] Add setting menu item to choose how many pages to load at once
+
+
 # Improvements for Continuous Journaling Plugin
 
 ## Essential Improvements
