@@ -1,8 +1,0 @@
-{
-  "journalFolder": "journals",
-  "dateFormat": "YYYY-MM-DD",
-  "sortDirection": "newest-first",
-  "defaultExpandEntries": true,
-  "folderFormat": "YYYY/MM",
-  "entriesPerBatch": 25
-}
