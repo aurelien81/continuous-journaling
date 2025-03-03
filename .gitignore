@@ -17,3 +17,7 @@ data.json
 logs/*
 !logs/devlogs.md
 *.log
+devlogs.md
+
+# Releases
+releases
