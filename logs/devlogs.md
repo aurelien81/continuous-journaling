@@ -1,4 +1,8 @@
 
+# March 3rd, 2025
+
+* updated readme file with as much information as seems necessary
+
 # March 2nd, 2025
 
 * added a button that gives the ability to delete empty journal entries
