@@ -1,6 +1,4 @@
 
-UPCOMING: add settings item that gives the ability to delete all empty journals.
-
 # March 2nd, 2025
 
 * added a button that gives the ability to delete empty journal entries

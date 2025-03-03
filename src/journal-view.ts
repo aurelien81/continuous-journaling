@@ -23,7 +23,6 @@ export class JournalView {
     
     // Simple lazy loading properties
     private allFiles: TFile[] = [];
-    private batchSize: number = 10;
     private currentBatch: number = 0;
     private loadMoreButton: HTMLElement | null = null;
     
@@ -76,15 +75,16 @@ export class JournalView {
         await this.loadBatch(panel);
         
         // Add "Load More" button if there are more entries
-        if (this.currentBatch * this.batchSize < this.allFiles.length) {
+        if (this.currentBatch * this.plugin.settings.entriesPerBatch < this.allFiles.length) {
             this.addLoadMoreButton(panel);
         }
     }
     
     // Load a batch of entries
     private async loadBatch(panel: HTMLElement): Promise<void> {
-        const start = this.currentBatch * this.batchSize;
-        const end = Math.min(start + this.batchSize, this.allFiles.length);
+        const batchSize = this.plugin.settings.entriesPerBatch;
+        const start = this.currentBatch * batchSize;
+        const end = Math.min(start + batchSize, this.allFiles.length);
         
         // Remove ALL "Load More" buttons to ensure there aren't duplicates
         panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
@@ -111,7 +111,7 @@ export class JournalView {
         panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
         
         // Add the "Load More" button at the end if there are more entries to load
-        if (this.currentBatch * this.batchSize < this.allFiles.length) {
+        if (this.currentBatch * this.plugin.settings.entriesPerBatch < this.allFiles.length) {
             this.addLoadMoreButton(panel);
         }
     }
@@ -122,9 +122,10 @@ export class JournalView {
         panel.querySelectorAll('.journal-load-more-button').forEach(btn => btn.remove());
         
         // Create the button
+        const entriesPerBatch = this.plugin.settings.entriesPerBatch;
         this.loadMoreButton = panel.createEl('button', {
             cls: 'journal-load-more-button',
-            text: 'Load More Entries'
+            text: `Load ${entriesPerBatch} More Entries`
         });
         
         // Make sure the button is at the end of the panel

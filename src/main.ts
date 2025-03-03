@@ -17,7 +17,7 @@ export default class JournalingPlugin extends Plugin {
         
         // Add ribbon icon
         const ribbonIconEl = this.addRibbonIcon(
-            'notebook-text', 
+            'notepad-text', 
             'Open Journals', 
             async (evt: MouseEvent) => {
                 await this.openJournalView();

@@ -7,6 +7,7 @@ export interface JournalingSettings {
     sortDirection: 'newest-first' | 'oldest-first';
     defaultExpandEntries: boolean;
     folderFormat: string;
+    entriesPerBatch: number;
 }
 
 export const DEFAULT_SETTINGS: JournalingSettings = {
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: JournalingSettings = {
     sortDirection: 'newest-first',
     defaultExpandEntries: true,
     folderFormat: '',
+    entriesPerBatch: 10,
 };
 
 export class JournalingSettingTab extends PluginSettingTab {
@@ -77,8 +79,8 @@ export class JournalingSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Folder Structure Format')
-            .setDesc('Format pattern for organizing journal entries in subfolders. Examples: empty for flat structure, "YYYY" for yearly folders, "YYYY/MM" for monthly folders.')
+            .setName('Folder Structure Format (Optional)')
+            .setDesc('Format pattern for organizing journal entries in subfolders.\nExamples: empty for flat structure, "YYYY" for yearly folders, "YYYY/MM" for monthly folders.')
             .addText(text => text
                 .setPlaceholder('YYYY/MM')
                 .setValue(this.plugin.settings.folderFormat)
@@ -86,6 +88,19 @@ export class JournalingSettingTab extends PluginSettingTab {
                     this.plugin.settings.folderFormat = value;
                     await this.plugin.saveSettings();
         }));
+
+        new Setting(containerEl)
+            .setName('Entries Per Page')
+            .setDesc('Number of journal entries to load at once')
+            .addDropdown(dropdown => dropdown
+                .addOption('10', '10 entries')
+                .addOption('25', '25 entries')
+                .addOption('50', '50 entries')
+                .setValue(this.plugin.settings.entriesPerBatch.toString())
+                .onChange(async (value) => {
+                    this.plugin.settings.entriesPerBatch = parseInt(value);
+                    await this.plugin.saveSettings();
+                }));
 
         new Setting(containerEl)
             .setName('Migrate Journal Entries')

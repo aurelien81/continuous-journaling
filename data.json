@@ -3,5 +3,6 @@
   "dateFormat": "YYYY-MM-DD",
   "sortDirection": "newest-first",
   "defaultExpandEntries": true,
-  "folderFormat": "YYYY/MM"
+  "folderFormat": "YYYY/MM",
+  "entriesPerBatch": 25
 }

@@ -2,35 +2,49 @@
 
 A plugin for obsidian that displays the journals in one Logseq-like continuous page.
 
-After installing this plugin, a new item is added to the obsidian ribbon. Clicking on this item creates a new tab that displays all the daily notes into one scrollable page. The notes are editable individually, and those edits are reflected in the original notes.
+**Screenshots:**
 
-Each time the journals tab is triggered, a new daily note for the day is create if that daily note doesn't already exist.
+![Continuous Journaling Dark](resources/screenshots/continousJounaling-dark.png)
+![Continuous Journaling Light](resources/screenshots/continousJounaling-light.png)
 
-The 'Daily Notes' core plugin is not necessary for this plugin to function.
+Insert file into journals:
 
-![Dark Mode](./resources/screenshots/pluginPresentation-darkv2.png)
-![Light Mode](./resources/screenshots/pluginPresentation-lightv2.png)
+![Insert file context menu](resources/screenshots/continousJournaling-insertIntoFile.png)
+
+Settings:
+
+![Settings](resources/screenshots/continousJournaling-settings.png)
 
 ## Features
 
 - **Continuous Journal View**: View all your daily journal entries in a single scrollable page
 - **In-place Editing**: Edit journal entries directly in the continuous view
 - **Dedicated Journal Folder**: Keep your journal entries organized in a dedicated folder
-- **Automatic Creation**: Automatically creates today's journal entry when needed
+- **Automatic Creation**: Automatically creates today's journal entry
 - **Collapsible Entries**: Easily collapse and expand entries for better navigation
 - **Customizable Settings**: Configure folder location, date format, and display preferences
-- **Empty Entry Management**: Easily delete all empty journal entries to keep your vault clean
+- **Empty Entry Management**: Easily delete all empty journal entries to keep your feed clean
 
 ## How to Use
 
-After installing this plugin:
+**After installing this plugin:**
 
-1. A new ribbon icon (notebook) is added to the left sidebar
+1. A new ribbon icon (notepad) is added to the left sidebar
 2. Click the icon to open the continuous journal view
 3. The view displays all your journal entries in one scrollable page
 4. Click on an entry's content to edit it directly
 5. Click on an entry's title to open it in a separate tab
 6. Use the toggle button to collapse/expand entries
+
+**Others functions:**
+
+* Use the 'close' button or press the Esc key to close the editing mode
+* Right click on any file (image, pdf, etc.) in your tree view while in editing mode, and choose 'Insert into Journal' to add the file to your journal entry
+
+**Notes:**
+
+* The Daily Notes core plugin isn't necessary when using continuous journaling
+* The Periodic Notes community plugin uses similar folder structures and could conflict with continuous journaling
 
 ## Settings
 
@@ -38,6 +52,10 @@ After installing this plugin:
 - **Date Format**: Format for journal filenames (default: "YYYY-MM-DD")
 - **Sort Direction**: Display newest entries first or oldest entries first
 - **Default Expand Entries**: Whether entries should be expanded by default
+- **Folder Structure Format:** Choose how your journal pages are stored (Flat folder, YYYY or YYYY/MM)
+- **Entries per Page:** choose how many entries are shown at once (10, 25 or 50)
+- **Migrate your Entries:** migrate all your journal files automatically to match your settings in 'Journal Folder' and 'Folder Structure Format'
+- **Delete Empty Journal Entries:** with its automated daily journal creation, there can be a lot of empty entries after a while. Delete all empty entries to clean up your feed with the click of a button.
 
 ## Installation
 
@@ -50,130 +68,23 @@ After installing this plugin:
 
 ### Manual Installation
 
-1. Download the latest release from the GitHub repository
+1. Download the latest release from the [GitHub repository](https://github.com/aurelien81/continuous-journaling)
 2. Extract the ZIP file into your Obsidian vault's `.obsidian/plugins/` directory
 3. Reload Obsidian
 4. Enable the plugin in Obsidian settings
 
-## Why Use Continuous Journaling?
-
-- **Seamless Experience**: View and edit all your journal entries without leaving the current context
-- **Easy Navigation**: Quickly scroll through your journal history
-- **Organization**: Keep your journal entries separate from other notes
-- **Familiar Interface**: If you're coming from Logseq, you'll feel right at home
-
 ## Support
 
-If you enjoy Continuous Journaling, please consider supporting the developer by buying them a coffee:
+Create a [new issue on the github repository](https://github.com/aurelien81/continuous-journaling/issues) if you encounter any problem or have any questions while using this plugin.
+
+## Credits
+
+Developed by Aurélien Lainé and inspired by [logseq](https://logseq.com/). If you enjoy Continuous Journaling, please consider supporting me:
 
 <a href="https://www.buymeacoffee.com/5SviNkXXo5" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Book" style="height: 60px !important;width: 217px !important;">
 </a>
 
-## Credits
-
-Developed by Aurélien Lainé
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Continuous Journaling for Obsidian - Functions Guide
-
-## Core Features
-
-### Journal View
-The main view of the plugin displays all your journal entries in a continuous, scrollable page. Each entry is collapsible and editable directly from this view.
-
-### Creating and Managing Entries
-
-#### Automatic Creation
-- **Today's Entry**: The plugin automatically creates today's journal entry when you open the journal view.
-- **Entry Organization**: All entries are stored in your designated journal folder (default: "journals").
-
-#### Navigation and Organization
-- **Date Format**: Entries follow the YYYY-MM-DD format by default, which ensures proper chronological sorting.
-- **Sorting Options**: View entries in either newest-first or oldest-first order.
-- **Collapsible Entries**: Each entry can be expanded or collapsed to focus on specific days.
-
-### Editing Capabilities
-
-#### In-place Editing
-- **Direct Editing**: Click on any entry's content to edit it directly within the continuous view.
-- **Autosaving**: Changes are automatically saved after you stop typing (with a brief delay).
-- **Visual Feedback**: A "Saving..." indicator appears while changes are being saved.
-- **Close Button**: Press the "Close" button or hit Escape to exit editing mode.
-- **Auto-resize**: The text area automatically adjusts its height as you type.
-
-#### Formatting and Markdown
-- **Markdown Support**: Full support for Obsidian's markdown syntax within the editor.
-- **Link Handling**: Links and hashtags in the entries remain clickable and functional.
-
-### Integration Features
-
-#### File References
-- **Insert References**: Right-click any file in Obsidian and select "Insert into Journal" to add a reference to that file in your active journal entry.
-- **Image Embedding**: Insert image files as embedded content in your journal entries.
-- **Note Linking**: Link to other notes within your journal entries using standard Obsidian syntax.
-
-#### Navigation
-- **Entry Links**: Click on an entry's title to open that journal entry in a separate tab.
-- **Original File Access**: Each entry links to its original file for easy navigation.
-
-## Settings and Customization
-
-### Configuration Options
-- **Journal Folder**: Specify the folder where journal entries are stored (default: "journals").
-- **Date Format**: Choose the format for journal filenames (default: YYYY-MM-DD).
-- **Sort Direction**: Display newest entries first or oldest entries first.
-- **Default Expand Entries**: Choose whether entries should be expanded by default.
-
-### Commands
-- **Open Journal View**: Open the continuous scrollable view of all journal entries.
-- **Create/Open Today's Journal**: Quickly create or access today's journal entry.
-
-## Technical Features
-
-### File Operations
-- **Folder Creation**: Automatically creates the journal folder if it doesn't exist.
-- **Date Detection**: Intelligently identifies journal entries based on their filename format.
-- **File Handling**: Proper error handling for file operations (reading, writing, creation).
-
-### User Interface
-- **Responsive Design**: The interface adjusts to different screen sizes.
-- **Visual Indicators**: Clear visual feedback for saving operations and editing mode.
-- **Error Handling**: User-friendly error notices when operations fail.
-
-
-
-### Delete Empty Journal Entries
-
-The plugin provides a feature to automatically delete all empty journal entries:
-
-1. Go to the plugin settings
-2. Find the "Delete Empty Journal Entries" section
-3. Click the "Delete Empty Entries" button
-4. Confirm that you want to proceed with the deletion
-
-This feature will scan all journal entries and delete any that contain no content (completely empty or containing only whitespace). This operation cannot be undone, so use it with caution.
-
-#### Why is this useful?
-
-- Cleanup your journal vault by removing entries that were created but never used
-- Remove auto-generated daily entries that you didn't end up writing in
-- Keep your journal focused only on days where you actually wrote something
+This project is licensed under the MIT License.
