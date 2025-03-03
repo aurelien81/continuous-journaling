@@ -1,0 +1,19 @@
+# build
+main.js
+*.js.map
+
+# Node dependencies
+node_modules/
+
+# Editor directories and files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Plugin data
+data.json
+
+# Logs
+logs/*
+!logs/devlogs.md
+*.log
