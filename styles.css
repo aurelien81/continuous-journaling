@@ -165,6 +165,20 @@
     opacity: 1;
 }
 
+/* Element visibility classes */
+.journal-hidden {
+    display: none !important;
+}
+
+.journal-visible {
+    display: block !important;
+}
+
+/* Close button visible state */
+.close-button-visible {
+    display: block;
+}
+
 /* Saving indicator */
 .journal-save-indicator {
     position: absolute;
@@ -179,11 +193,16 @@
     z-index: 5;
 }
 
-.journal-save-indicator.saving {
+/* Save indicator states */
+.save-indicator-visible {
+    display: block;
+}
+
+.save-indicator-saving {
     color: var(--text-muted);
 }
 
-.journal-save-indicator.saved {
+.save-indicator-saved {
     color: var(--text-accent);
 }
 
@@ -191,6 +210,11 @@
 .cm-hashtag {
     cursor: pointer;
     color: var(--text-accent);
+}
+
+/* Clickable elements */
+.journal-clickable {
+    cursor: pointer;
 }
 
 /* Error message styling */
@@ -213,6 +237,15 @@
     max-height: 400px;
 }
 
+/* Image display in journal entries */
+.journal-entry img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
     .journal-entry {
@@ -233,15 +266,6 @@
     outline: 1px dashed var(--background-modifier-border);
     outline-offset: 4px;
     transition: outline 0.2s ease;
-}
-
-/* Image display in journal entries */
-.journal-entry img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 10px 0;
-    border-radius: 4px;
 }
 
 /* Load More button styling */

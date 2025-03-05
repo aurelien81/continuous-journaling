@@ -176,7 +176,7 @@ export default class JournalingPlugin extends Plugin {
                 await this.app.vault.create(newPath, content);
                 
                 // Delete the original file
-                await this.app.vault.delete(file);
+                await this.app.fileManager.trashFile(file);
                 
                 migratedCount++;
                 modal.updateProgress(migratedCount);
@@ -270,7 +270,7 @@ export default class JournalingPlugin extends Plugin {
         for (const file of emptyFiles) {
             try {
                 // Delete the file
-                await this.app.vault.delete(file);
+                await this.app.fileManager.trashFile(file);
                 deletedCount++;
             } catch (error) {
                 console.error(`Error deleting file ${file.path}:`, error);

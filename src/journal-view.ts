@@ -211,21 +211,19 @@ export class JournalView {
         
         // Create close button (new requirement)
         const closeButton = contentArea.createEl('button', {
-            cls: 'journal-close-button',
+            cls: 'journal-close-button journal-hidden',
             text: 'Close'
         });
-        closeButton.style.display = 'none'; // Hide initially
         
         // Create save indicator
         const saveIndicator = contentArea.createDiv({ 
-            cls: 'journal-save-indicator',
+            cls: 'journal-save-indicator journal-hidden',
             text: 'Saved'
         });
-        saveIndicator.style.display = 'none'; // Hide initially
         
         // Adjust textarea height to content
         window.requestAnimationFrame(() => {
-            editableContent.style.height = editableContent.scrollHeight + 'px';
+            editableContent.setAttribute('style', `height: ${editableContent.scrollHeight}px`);
         });
         
         // Function to render the markdown content
@@ -252,11 +250,11 @@ export class JournalView {
             // Hide rendered view, show editable view and close button
             renderedContent.classList.remove('active-view');
             editableContent.classList.add('active-view');
-            closeButton.style.display = 'block';
+            closeButton.classList.remove('journal-hidden');
+            closeButton.classList.add('journal-visible');
             
             // Adjust textarea height
-            editableContent.style.height = 'auto';
-            editableContent.style.height = editableContent.scrollHeight + 'px';
+            editableContent.setAttribute('style', `height: ${editableContent.scrollHeight}px`);
             editableContent.focus();
         };
         
@@ -275,7 +273,8 @@ export class JournalView {
                 
                 // Hide editable view and close button, show rendered view
                 editableContent.classList.remove('active-view');
-                closeButton.style.display = 'none';
+                closeButton.classList.remove('journal-visible');
+                closeButton.classList.add('journal-hidden');
                 renderedContent.classList.add('active-view');
                 
                 // Clear editing flag and active editor reference
@@ -313,8 +312,7 @@ export class JournalView {
         
         // Auto-adjust textarea height while typing
         editableContent.addEventListener('input', () => {
-            editableContent.style.height = 'auto';
-            editableContent.style.height = editableContent.scrollHeight + 'px';
+            editableContent.setAttribute('style', `height: ${editableContent.scrollHeight}px`);
             
             // Update current content while typing
             currentContent = editableContent.value;
@@ -324,9 +322,10 @@ export class JournalView {
         let saveTimeout: NodeJS.Timeout | null = null;
         editableContent.addEventListener('input', () => {
             // Show 'Saving...' indicator
-            saveIndicator.style.display = 'block';
-            saveIndicator.classList.remove('saved');
-            saveIndicator.classList.add('saving');
+            saveIndicator.classList.remove('journal-hidden');
+            saveIndicator.classList.add('save-indicator-visible');
+            saveIndicator.classList.remove('save-indicator-saved');
+            saveIndicator.classList.add('save-indicator-saving');
             saveIndicator.textContent = 'Saving...';
             
             // Clear previous timeout
@@ -339,14 +338,15 @@ export class JournalView {
                 await this.saveContentToFile(file, currentContent);
                 
                 // Update indicator to 'Saved'
-                saveIndicator.classList.remove('saving');
-                saveIndicator.classList.add('saved');
+                saveIndicator.classList.remove('save-indicator-saving');
+                saveIndicator.classList.add('save-indicator-saved');
                 saveIndicator.textContent = 'Saved';
                 
                 // Hide the indicator after a delay
                 setTimeout(() => {
-                    if (saveIndicator.classList.contains('saved')) {
-                        saveIndicator.style.display = 'none';
+                    if (saveIndicator.classList.contains('save-indicator-saved')) {
+                        saveIndicator.classList.remove('save-indicator-visible');
+                        saveIndicator.classList.add('journal-hidden');
                     }
                 }, 2000);
             }, 500);
@@ -479,7 +479,7 @@ export class JournalView {
                     this.openSearchWithHashtag(hashtagText);
                 });
                 
-                newTag.style.cursor = 'pointer';
+                newTag.addClass('journal-clickable');
             }
         });
     }

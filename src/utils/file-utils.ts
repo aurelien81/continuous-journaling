@@ -134,7 +134,12 @@ export async function getOrCreateJournalFile(
     try {
         file = await app.vault.create(filePath, initialContent);
         new Notice(`Created journal entry: ${filename}`);
-        return file as TFile;
+        if (file instanceof TFile) {
+            return file;
+        } else {
+            console.error('Created file is not a TFile instance');
+            return null;
+        }
     } catch (error) {
         new Notice(`Failed to create journal entry: ${error}`);
         console.error('Failed to create journal entry:', error);
