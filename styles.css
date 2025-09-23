@@ -1,0 +1,327 @@
+/* Main container for the journal panel */
+.custom-journal-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 10px;
+    background: var(--background-primary);
+}
+
+/* Empty state when no journals are found */
+.journal-empty-state {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Journal entry */
+.journal-entry {
+    width: 85%;
+    max-width: 800px;
+    margin: 10px 0;
+    padding: 10px 0;
+    border-top: var(--border-width) solid var(--background-modifier-border);
+    position: relative;
+}
+
+.journal-entry:first-child {
+    border-top: none;
+}
+
+/* Header for each journal entry */
+.journal-entry-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* Toggle button for expanding/collapsing entries */
+.collapsible-toggle {
+    margin: 0 5px 0 0;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 10px 0 0;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none;
+}
+
+.collapsible-toggle:after {
+    font-family: 'var(--font-monospace)';
+    content: "▶";
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1.5em;
+    color: var(--text-muted);
+}
+
+.collapsible-toggle.toggle-expanded:after {
+    content: "▼";
+}
+
+/* Title link for each journal entry */
+.journal-entry-link, 
+.journal-entry-link:hover, 
+.journal-entry-link:visited {
+    text-decoration: none;
+    color: var(--text-normal);
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.journal-entry-link:hover {
+    text-decoration: underline;
+    color: var(--text-accent);
+}
+
+/* Collapsible content area */
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+    position: relative;
+}
+
+.content-expanded {
+    max-height: 100vh;
+}
+
+/* Rendered markdown view */
+.rendered-content {
+    display: none; /* Hide by default */
+    width: 100%;
+    min-height: 50px;
+    padding: 10px 0;
+}
+
+.rendered-content.active-view {
+    display: block; /* Show when active */
+}
+
+/* Editable textarea */
+.editable-content {
+    display: none; /* Hide by default */
+    width: 100%;
+    min-height: 50px;
+    resize: none;
+    border: none !important;
+    outline: none !important;
+    background-color: var(--background-primary) !important;
+    color: var(--text-normal);
+    font-family: var(--font-text);
+    font-size: inherit;
+    line-height: inherit;
+    padding: 10px 0;
+    margin: 0;
+    box-shadow: none !important;
+    border-radius: 0;
+    transition: none;
+    overflow: hidden;
+}
+
+.editable-content:focus {
+    background-color: var(--background-primary) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+.editable-content.active-view {
+    display: block; /* Show when active */
+    max-height: none; /* Remove any max-height limitation */
+}
+
+/* Active view (either rendered or editable) */
+.active-view {
+    display: block;
+}
+
+/* Close Button for journal entries */
+.journal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.journal-close-button:hover {
+    opacity: 1;
+}
+
+/* Element visibility classes */
+.journal-hidden {
+    display: none !important;
+}
+
+.journal-visible {
+    display: block !important;
+}
+
+/* Close button visible state */
+.close-button-visible {
+    display: block;
+}
+
+/* Saving indicator */
+.journal-save-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    opacity: 0.8;
+    z-index: 5;
+}
+
+/* Save indicator states */
+.save-indicator-visible {
+    display: block;
+}
+
+.save-indicator-saving {
+    color: var(--text-muted);
+}
+
+.save-indicator-saved {
+    color: var(--text-accent);
+}
+
+/* Hashtag styling */
+.cm-hashtag {
+    cursor: pointer;
+    color: var(--text-accent);
+}
+
+/* Clickable elements */
+.journal-clickable {
+    cursor: pointer;
+}
+
+/* Error message styling */
+.journal-error {
+    background-color: var(--background-modifier-error-rgb, rgba(230, 0, 0, 0.1));
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
+
+.journal-error-content {
+    padding: 10px;
+    color: var(--text-error);
+    font-weight: 500;
+}
+
+/* Make embedded content fit within the journal entry */
+.journal-entry .external-embed {
+    width: 100% !important;
+    max-height: 400px;
+}
+
+/* Image display in journal entries */
+.journal-entry img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .journal-entry {
+        width: 95%;
+    }
+    
+    .journal-close-button {
+        top: 5px;
+        right: 5px;
+        padding: 3px 8px;
+        font-size: 0.7em;
+    }
+}
+
+/* Add a subtle indication that the rendered content is clickable */
+.rendered-content:hover {
+    cursor: text;
+    outline: 1px dashed var(--background-modifier-border);
+    outline-offset: 4px;
+    transition: outline 0.2s ease;
+}
+
+/* Load More button styling */
+.journal-load-more-button {
+    position: relative;
+    display: block;
+    margin: 20px auto;
+    padding: 8px 16px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.journal-load-more-button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+.journal-load-more-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* Empty state styling */
+.journal-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Migrtion modal styling */
+.migration-progress {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.migration-status {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+}
+
+/* Style for the delete button in settings */
+.journal-delete-button {
+    background-color: #e53935 !important; /* Red color */
+    color: white !important;
+}
+
+.journal-delete-button:hover {
+    background-color: #c62828 !important; /* Darker red on hover */
+}
