@@ -47,9 +47,10 @@ export class JournalingSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Date Format')
-            .setDesc('Format for journal filenames (YYYY-MM-DD recommended)')
-            .addText(text => text
-                .setPlaceholder('YYYY-MM-DD')
+            .setDesc('Format for journal filenames')
+            .addDropdown(dropdown => dropdown
+                .addOption('YYYY-MM-DD', 'YYYY-MM-DD (e.g., 2025-09-23)')
+                .addOption('MMM Do, YYYY', 'MMM Do, YYYY (e.g., Sep 23rd, 2025)')
                 .setValue(this.plugin.settings.dateFormat)
                 .onChange(async (value) => {
                     this.plugin.settings.dateFormat = value;

@@ -82,7 +82,7 @@ export default class JournalingPlugin extends Plugin {
     
     // Creates or opens today's journal entry
     async createTodaysJournal(): Promise<void> {
-        const date = getTodayHumanDate();
+        const date = this.settings.dateFormat === 'MMM Do, YYYY' ? getTodayHumanDate() : getTodayDate();
         const fileName = `${date}.md`;
         
         const file = await getOrCreateJournalFile(
