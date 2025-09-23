@@ -1,5 +1,5 @@
 import { App, Notice, TFile, TFolder } from 'obsidian';
-import { isDateFormat } from './date-utils';
+import { isDateFormat, isAnyDateFormat, humanDateToISO } from './date-utils';
 
 /**
  * Gets the full path for a file within the specified folder
@@ -54,15 +54,23 @@ export function getJournalFilePath(journalFolder: string, filename: string, fold
         return getFilePath(journalFolder, filename);
     }
     
-    // Extract the date from the filename (assuming YYYY-MM-DD.md format)
+    // Extract the date from the filename (supporting both YYYY-MM-DD.md and MMM Do, YYYY.md formats)
     const datePart = filename.split('.')[0]; // Remove file extension
-    if (!isDateFormat(datePart)) {
-        // If filename doesn't match date pattern, fall back to flat structure
+    if (!isAnyDateFormat(datePart)) {
+        // If filename doesn't match any supported date pattern, fall back to flat structure
         return getFilePath(journalFolder, filename);
     }
     
-    // Parse the date
-    const [year, month, day] = datePart.split('-').map(part => parseInt(part));
+    // Convert to ISO format if needed
+    let isoDate: string;
+    if (isDateFormat(datePart)) {
+        isoDate = datePart;
+    } else {
+        isoDate = humanDateToISO(datePart);
+    }
+    
+    // Parse the ISO date
+    const [year, month, day] = isoDate.split('-').map(part => parseInt(part));
     
     // Format the folder path based on the pattern
     let formattedPath = folderFormat;
@@ -151,8 +159,8 @@ export async function getOrCreateJournalFile(
  * Checks if a file is a journal file based on its name pattern and location
  */
 export function isJournalFile(file: TFile, journalFolder?: string, folderFormat?: string): boolean {
-    // Check if basename matches YYYY-MM-DD pattern
-    const isDateBasename = isDateFormat(file.basename);
+    // Check if basename matches any supported date pattern
+    const isDateBasename = isAnyDateFormat(file.basename);
     
     if (!isDateBasename) {
         return false;
@@ -167,7 +175,16 @@ export function isJournalFile(file: TFile, journalFolder?: string, folderFormat?
     if (folderFormat) {
         // Generate the expected base path
         const dateStr = file.basename.split('.')[0];
-        const [year, month, day] = dateStr.split('-');
+        
+        // Convert to ISO format if needed
+        let isoDate: string;
+        if (isDateFormat(dateStr)) {
+            isoDate = dateStr;
+        } else {
+            isoDate = humanDateToISO(dateStr);
+        }
+        
+        const [year, month, day] = isoDate.split('-');
         
         let expectedPath = folderFormat;
         expectedPath = expectedPath.replace('YYYY', year);
@@ -200,10 +217,22 @@ export function getJournalFiles(app: App, journalFolder?: string, folderFormat?:
  */
 export function sortJournalFiles(files: TFile[], sortDirection: 'newest-first' | 'oldest-first'): TFile[] {
     return files.sort((a, b) => {
+        // Convert both basenames to ISO format for proper sorting
+        const getISODate = (basename: string): string => {
+            if (isDateFormat(basename)) {
+                return basename;
+            } else {
+                return humanDateToISO(basename);
+            }
+        };
+        
+        const dateA = getISODate(a.basename);
+        const dateB = getISODate(b.basename);
+        
         if (sortDirection === 'newest-first') {
-            return b.basename.localeCompare(a.basename);
+            return dateB.localeCompare(dateA);
         } else {
-            return a.basename.localeCompare(b.basename);
+            return dateA.localeCompare(dateB);
         }
     });
 }
