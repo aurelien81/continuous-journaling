@@ -82,7 +82,48 @@ export default class JournalingPlugin extends Plugin {
     
     // Creates or opens today's journal entry
     async createTodaysJournal(): Promise<void> {
-        const date = this.settings.dateFormat === 'MMM Do, YYYY' ? getTodayHumanDate() : getTodayDate();
+        let date: string;
+        
+        if (this.settings.dateFormat === 'MMM Do, YYYY') {
+            date = getTodayHumanDate();
+        } else if (this.settings.dateFormat === 'YYYY-MM-DD') {
+            date = getTodayDate();
+        } else {
+            // For custom formats, follow Moment.js format standards
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const day = today.getDate();
+            const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthNamesFull = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthNameShort = monthNamesShort[today.getMonth()];
+            const monthNameFull = monthNamesFull[today.getMonth()];
+            
+            // Add ordinal suffix for days
+            const getDaySuffix = (day: number): string => {
+                if (day > 3 && day < 21) return 'th';
+                switch (day % 10) {
+                    case 1: return 'st';
+                    case 2: return 'nd';
+                    case 3: return 'rd';
+                    default: return 'th';
+                }
+            };
+            
+            date = this.settings.dateFormat
+                .replace(/YYYY/g, year.toString())
+                .replace(/YY/g, year.toString().slice(-2))
+                .replace(/MMMM/g, monthNameFull) // Full month name
+                .replace(/MMM/g, monthNameShort) // Abbreviated month name
+                .replace(/MM/g, String(month).padStart(2, '0'))
+                .replace(/M/g, month.toString())
+                .replace(/Do/g, day.toString() + getDaySuffix(day)) // Day with ordinal (1st, 2nd, 3rd, etc.)
+                .replace(/DD/g, String(day).padStart(2, '0'))
+                .replace(/D/g, day.toString());
+        }
+        
         const fileName = `${date}.md`;
         
         const file = await getOrCreateJournalFile(

@@ -45,63 +45,82 @@ export class JournalingSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
+        // Function to generate preview text
+        const generatePreviewText = (format: string): string => {
+            const today = new Date();
+            
+            try {
+                if (format === 'MMM Do, YYYY') {
+                    // Generate human-readable format
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const month = monthNames[today.getMonth()];
+                    const day = today.getDate();
+                    const year = today.getFullYear();
+                    
+                    // Add ordinal suffix
+                    const getDaySuffix = (day: number): string => {
+                        if (day > 3 && day < 21) return 'th';
+                        switch (day % 10) {
+                            case 1: return 'st';
+                            case 2: return 'nd';
+                            case 3: return 'rd';
+                            default: return 'th';
+                        }
+                    };
+                    
+                    return `${month} ${day}${getDaySuffix(day)}, ${year}`;
+                } else {
+                    // For other formats, follow Moment.js format standards
+                    const year = today.getFullYear();
+                    const month = today.getMonth() + 1;
+                    const day = today.getDate();
+                    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const monthNamesFull = ['January', 'February', 'March', 'April', 'May', 'June',
+                                          'July', 'August', 'September', 'October', 'November', 'December'];
+                    const monthNameShort = monthNamesShort[today.getMonth()];
+                    const monthNameFull = monthNamesFull[today.getMonth()];
+                    
+                    // Add ordinal suffix for days
+                    const getDaySuffix = (day: number): string => {
+                        if (day > 3 && day < 21) return 'th';
+                        switch (day % 10) {
+                            case 1: return 'st';
+                            case 2: return 'nd';
+                            case 3: return 'rd';
+                            default: return 'th';
+                        }
+                    };
+                    
+                    return format
+                        .replace(/YYYY/g, year.toString())
+                        .replace(/YY/g, year.toString().slice(-2))
+                        .replace(/MMMM/g, monthNameFull) // Full month name
+                        .replace(/MMM/g, monthNameShort) // Abbreviated month name
+                        .replace(/MM/g, String(month).padStart(2, '0'))
+                        .replace(/M/g, month.toString())
+                        .replace(/Do/g, day.toString() + getDaySuffix(day)) // Day with ordinal (1st, 2nd, 3rd, etc.)
+                        .replace(/DD/g, String(day).padStart(2, '0'))
+                        .replace(/D/g, day.toString());
+                }
+            } catch (error) {
+                return '[Invalid format]';
+            }
+        };
+
         const dateFormatSetting = new Setting(containerEl)
             .setName('Date Format')
-            .setDesc('Format for journal filenames')
-            .addDropdown(dropdown => dropdown
-                .addOption('YYYY-MM-DD', 'YYYY-MM-DD (e.g., 2025-09-23)')
-                .addOption('MMM Do, YYYY', 'MMM Do, YYYY (e.g., Sep 23rd, 2025)')
+            .setDesc(`Format for journal filenames (YYYY-MM-DD recommended). Your journal filename will look like this: ${generatePreviewText(this.plugin.settings.dateFormat)}.md`)
+            .addText(text => text
+                .setPlaceholder('YYYY-MM-DD')
                 .setValue(this.plugin.settings.dateFormat)
                 .onChange(async (value) => {
                     this.plugin.settings.dateFormat = value;
                     await this.plugin.saveSettings();
-                    updateDatePreview();
+                    // Update the description with new preview
+                    dateFormatSetting.setDesc(`Format for journal filenames (YYYY-MM-DD recommended). Your journal filename will look like this: ${generatePreviewText(value)}.md`);
                 }));
-
-        // Add preview label
-        const previewLabel = containerEl.createEl('div', {
-            cls: 'date-format-preview',
-            text: ''
-        });
-
-        // Function to update the preview
-        const updateDatePreview = () => {
-            const today = new Date();
-            let previewText: string;
-            
-            if (this.plugin.settings.dateFormat === 'MMM Do, YYYY') {
-                // Generate human-readable format
-                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const month = monthNames[today.getMonth()];
-                const day = today.getDate();
-                const year = today.getFullYear();
-                
-                // Add ordinal suffix
-                const getDaySuffix = (day: number): string => {
-                    if (day > 3 && day < 21) return 'th';
-                    switch (day % 10) {
-                        case 1: return 'st';
-                        case 2: return 'nd';
-                        case 3: return 'rd';
-                        default: return 'th';
-                    }
-                };
-                
-                previewText = `${month} ${day}${getDaySuffix(day)}, ${year}`;
-            } else {
-                // Generate YYYY-MM-DD format
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                previewText = `${year}-${month}-${day}`;
-            }
-            
-            previewLabel.textContent = `Your current syntax looks like this: ${previewText}.md`;
-        };
-
-        // Initialize the preview
-        updateDatePreview();
 
         new Setting(containerEl)
             .setName('Sort Direction')
