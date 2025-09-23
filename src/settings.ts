@@ -45,7 +45,7 @@ export class JournalingSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        new Setting(containerEl)
+        const dateFormatSetting = new Setting(containerEl)
             .setName('Date Format')
             .setDesc('Format for journal filenames')
             .addDropdown(dropdown => dropdown
@@ -55,7 +55,53 @@ export class JournalingSettingTab extends PluginSettingTab {
                 .onChange(async (value) => {
                     this.plugin.settings.dateFormat = value;
                     await this.plugin.saveSettings();
+                    updateDatePreview();
                 }));
+
+        // Add preview label
+        const previewLabel = containerEl.createEl('div', {
+            cls: 'date-format-preview',
+            text: ''
+        });
+
+        // Function to update the preview
+        const updateDatePreview = () => {
+            const today = new Date();
+            let previewText: string;
+            
+            if (this.plugin.settings.dateFormat === 'MMM Do, YYYY') {
+                // Generate human-readable format
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = monthNames[today.getMonth()];
+                const day = today.getDate();
+                const year = today.getFullYear();
+                
+                // Add ordinal suffix
+                const getDaySuffix = (day: number): string => {
+                    if (day > 3 && day < 21) return 'th';
+                    switch (day % 10) {
+                        case 1: return 'st';
+                        case 2: return 'nd';
+                        case 3: return 'rd';
+                        default: return 'th';
+                    }
+                };
+                
+                previewText = `${month} ${day}${getDaySuffix(day)}, ${year}`;
+            } else {
+                // Generate YYYY-MM-DD format
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                previewText = `${year}-${month}-${day}`;
+            }
+            
+            previewLabel.textContent = `Your current syntax looks like this: ${previewText}.md`;
+        };
+
+        // Initialize the preview
+        updateDatePreview();
 
         new Setting(containerEl)
             .setName('Sort Direction')

@@ -1,3 +1,15 @@
+/* Date format preview styling */
+.date-format-preview {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    font-family: var(--font-monospace);
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
 /* Main container for the journal panel */
 .custom-journal-panel {
     position: relative;
